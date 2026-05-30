@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
 /** GitHub Pages: https://aldoshinamaria.github.io/70_LET_OBNINSKU/ */
-const GITHUB_PAGES_BASE = '/70_LET_OBNINSKU/';
+export const GITHUB_PAGES_BASE = '/70_LET_OBNINSKU/';
 
-export default defineConfig({
-  base: GITHUB_PAGES_BASE,
+export default defineConfig(({ mode }) => ({
+  /** Корень для Vercel и локальной разработки; подпуть — только для GitHub Pages. */
+  base: mode === 'github-pages' ? GITHUB_PAGES_BASE : '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -29,4 +30,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

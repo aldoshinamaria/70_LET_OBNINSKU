@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { MaLogo } from '@/components/brand/MaLogo';
 import { ProjectLogo } from '@/components/brand/ProjectLogo';
 import { AUTHOR_SIGNATURE, PROJECT_NAME } from '@/utils/constants';
@@ -26,12 +25,6 @@ export function Footer() {
               <p className="text-xs text-secondary/60">© {year} · Обнинск</p>
             </div>
           </div>
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-2 border-t border-border pt-6 text-xs text-secondary/60">
-          <Link to="/admin" className="transition-colors hover:text-secondary">
-            Администрирование
-          </Link>
         </div>
       </div>
     </footer>

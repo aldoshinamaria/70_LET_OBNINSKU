@@ -143,12 +143,13 @@ function readAll(): Message[] {
   }
 }
 
-function writeAll(messages: Message[]): void {
-  if (!isStorageAvailable()) return;
+function writeAll(messages: Message[]): boolean {
+  if (!isStorageAvailable()) return false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    return true;
   } catch {
-    /* переполнение хранилища — молча игнорируем в демо-режиме */
+    return false;
   }
 }
 
@@ -170,7 +171,9 @@ export function localCreateMessage(payload: MessageInsert): Message {
     status: 'pending',
     featured: false,
   };
-  writeAll([...messages, message]);
+  if (!writeAll([...messages, message])) {
+    throw new Error('Не удалось сохранить послание в браузере.');
+  }
   return message;
 }
 
@@ -238,15 +241,13 @@ export function localUpdateMessageStatus(
   const messages = readAll();
   const exists = messages.some((m) => m.id === id);
   if (!exists) return false;
-  writeAll(
-    messages.map((m) => {
-      if (m.id !== id) return m;
-      const next: Message = { ...m, status };
-      if (status === 'rejected') next.featured = false;
-      return next;
-    }),
-  );
-  return true;
+  const next = messages.map((m) => {
+    if (m.id !== id) return m;
+    const updated: Message = { ...m, status };
+    if (status === 'rejected') updated.featured = false;
+    return updated;
+  });
+  return writeAll(next);
 }
 
 /** Публикация / снятие с сайта (лучшие пожелания). */
@@ -257,22 +258,19 @@ export function localUpdateMessageFeatured(
   const messages = readAll();
   const exists = messages.some((m) => m.id === id);
   if (!exists) return false;
-  writeAll(
-    messages.map((m) => {
-      if (m.id !== id) return m;
-      if (featured) {
-        return { ...m, status: 'approved' as MessageStatus, featured: true };
-      }
-      return { ...m, featured: false };
-    }),
-  );
-  return true;
+  const next = messages.map((m) => {
+    if (m.id !== id) return m;
+    if (featured) {
+      return { ...m, status: 'approved' as MessageStatus, featured: true };
+    }
+    return { ...m, featured: false };
+  });
+  return writeAll(next);
 }
 
 export function localDeleteMessage(id: string): boolean {
   const messages = readAll();
   const next = messages.filter((m) => m.id !== id);
   if (next.length === messages.length) return false;
-  writeAll(next);
-  return true;
+  return writeAll(next);
 }

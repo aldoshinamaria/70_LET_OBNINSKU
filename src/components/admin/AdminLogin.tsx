@@ -1,15 +1,13 @@
 import { useState, type FormEvent } from 'react';
-import { Lock, Sparkles } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 
 interface AdminLoginProps {
   onSubmit: (password: string) => boolean;
-  /** Демо-пароль для подсказки. null — если задан собственный пароль через ENV. */
-  demoPassword?: string | null;
 }
 
-export function AdminLogin({ onSubmit, demoPassword }: AdminLoginProps) {
+export function AdminLogin({ onSubmit }: AdminLoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -59,18 +57,6 @@ export function AdminLogin({ onSubmit, demoPassword }: AdminLoginProps) {
             Войти
           </Button>
         </form>
-
-        {demoPassword && (
-          <div className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-secondary">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span>
-              Демо-пароль:{' '}
-              <code className="font-mono font-semibold text-primary">
-                {demoPassword}
-              </code>
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

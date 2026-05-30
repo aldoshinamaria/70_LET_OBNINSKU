@@ -220,7 +220,16 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
             <p className="text-center text-sm font-medium text-text">
               Поделитесь письмом в будущее
             </p>
-            <ShareButtons className="justify-center" />
+            <ShareButtons
+              className="justify-center"
+              onNotify={setToast}
+              getPostcardNode={() => postcardRef.current}
+              postcardFileName={
+                message
+                  ? `obninsk-70-poslanie-${formatMessageNumber(message.message_number)}.png`
+                  : undefined
+              }
+            />
 
             <div className="flex w-full flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
               <Button

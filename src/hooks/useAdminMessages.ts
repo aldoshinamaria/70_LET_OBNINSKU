@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { applyAdminOverrides } from '@/services/adminOverrides';
 import {
   deleteMessage,
   getAllMessages,
@@ -10,6 +11,7 @@ import type { Message, MessageStatus } from '@/types';
 interface UseAdminMessagesResult {
   messages: Message[];
   loading: boolean;
+  actingId: string | null;
   error: string | null;
   actionError: string | null;
   refetch: () => Promise<void>;
@@ -23,11 +25,14 @@ interface UseAdminMessagesResult {
 export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
+  const refetch = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setLoading(true);
+    }
     const result = await getAllMessages();
     if (result.ok) {
       setMessages(result.data);
@@ -35,7 +40,9 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
     } else {
       setError(result.error);
     }
-    setLoading(false);
+    if (!options?.silent) {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -44,68 +51,59 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
     }
   }, [enabled, refetch]);
 
-  const patchLocally = (id: string, patch: Partial<Message>) => {
-    setMessages((prev) =>
-      prev.map((message) =>
-        message.id === id ? { ...message, ...patch } : message,
-      ),
-    );
-  };
-
-  const changeStatus = async (id: string, status: MessageStatus) => {
+  const runAction = async (
+    id: string,
+    action: () => Promise<{ ok: boolean; error?: string }>,
+  ) => {
     setActionError(null);
-    const previous = messages.find((m) => m.id === id);
-    const patch: Partial<Message> = { status };
-    if (status === 'rejected') patch.featured = false;
-    patchLocally(id, patch);
-
-    const result = await updateMessageStatus(id, status);
-    if (!result.ok && previous) {
-      patchLocally(id, {
-        status: previous.status,
-        featured: previous.featured,
-      });
-      setActionError(result.error);
+    setActingId(id);
+    try {
+      const result = await action();
+      if (!result.ok) {
+        setActionError(result.error ?? 'Не удалось выполнить действие.');
+        return;
+      }
+      setMessages((prev) => applyAdminOverrides(prev));
+      await refetch({ silent: true });
+    } finally {
+      setActingId(null);
     }
   };
 
-  const changeFeatured = async (id: string, featured: boolean) => {
-    setActionError(null);
-    const previous = messages.find((m) => m.id === id);
-    const patch: Partial<Message> = featured
-      ? { featured: true, status: 'approved' }
-      : { featured: false };
-    patchLocally(id, patch);
+  const approve = (id: string) =>
+    runAction(id, () => updateMessageStatus(id, 'approved'));
 
-    const result = await updateMessageFeatured(id, featured);
-    if (!result.ok && previous) {
-      patchLocally(id, {
-        status: previous.status,
-        featured: previous.featured,
-      });
-      setActionError(result.error);
-    }
+  const reject = (id: string) =>
+    runAction(id, () => updateMessageStatus(id, 'rejected'));
+
+  const publish = (id: string) => {
+    const message = messages.find((item) => item.id === id);
+    return runAction(id, () => updateMessageFeatured(id, true, message));
   };
 
-  const approve = (id: string) => changeStatus(id, 'approved');
-  const reject = (id: string) => changeStatus(id, 'rejected');
-  const publish = (id: string) => changeFeatured(id, true);
-  const unpublish = (id: string) => changeFeatured(id, false);
+  const unpublish = (id: string) =>
+    runAction(id, () => updateMessageFeatured(id, false));
 
   const remove = async (id: string) => {
     setActionError(null);
-    const snapshot = messages;
-    setMessages((prev) => prev.filter((message) => message.id !== id));
-    const result = await deleteMessage(id);
-    if (!result.ok) {
-      setMessages(snapshot);
-      setActionError(result.error);
+    setActingId(id);
+    try {
+      const result = await deleteMessage(id);
+      if (!result.ok) {
+        setActionError(result.error);
+        return;
+      }
+      setMessages((prev) => applyAdminOverrides(prev));
+      await refetch({ silent: true });
+    } finally {
+      setActingId(null);
     }
   };
 
   return {
     messages,
     loading,
+    actingId,
     error,
     actionError,
     refetch,

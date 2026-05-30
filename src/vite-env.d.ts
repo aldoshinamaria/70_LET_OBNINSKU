@@ -4,6 +4,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_ADMIN_PASSWORD: string;
+  /** Публичный URL сайта для кнопок «Поделиться» (если отличается от домена в constants). */
+  readonly VITE_PUBLIC_SITE_URL: string;
 }
 
 interface ImportMeta {

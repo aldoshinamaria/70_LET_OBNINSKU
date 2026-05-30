@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ADMIN_OVERRIDES_EVENT } from '@/services/adminOverrides';
 import { getApprovedMessages } from '@/services/messages';
 import type { Message } from '@/types';
 
@@ -14,8 +15,10 @@ export function useApprovedMessages(): UseApprovedMessagesResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
+  const refetch = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setLoading(true);
+    }
     const result = await getApprovedMessages();
     if (result.ok) {
       setMessages(result.data);
@@ -23,11 +26,26 @@ export function useApprovedMessages(): UseApprovedMessagesResult {
     } else {
       setError(result.error);
     }
-    setLoading(false);
+    if (!options?.silent) {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     void refetch();
+  }, [refetch]);
+
+  useEffect(() => {
+    const onOverridesChanged = () => void refetch({ silent: true });
+    const onFocus = () => void refetch({ silent: true });
+
+    window.addEventListener(ADMIN_OVERRIDES_EVENT, onOverridesChanged);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      window.removeEventListener(ADMIN_OVERRIDES_EVENT, onOverridesChanged);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [refetch]);
 
   return { messages, loading, error, refetch };

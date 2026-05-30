@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { FeaturedBadge, StatusBadge } from '@/components/StatusBadge';
 import { useAdminMessages } from '@/hooks/useAdminMessages';
+import { DEMO_MODE } from '@/services/config';
 import { formatDate, formatMessageNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
 import type { Message, MessageStatus } from '@/types';
@@ -36,6 +37,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const {
     messages,
     loading,
+    actingId,
     error,
     actionError,
     refetch,
@@ -107,6 +109,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       </header>
 
       <div className="mx-auto max-w-content px-5 py-8 sm:px-8">
+        <p className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
+          {DEMO_MODE
+            ? 'Демо-режим: послания в этом браузере. Решения модерации сохраняются локально.'
+            : 'Решения «одобрить / на сайт / отклонить» сохраняются в этом браузере и сразу видны в админке и на сайте. Для общей базы настройте Supabase (supabase/schema.sql).'}
+        </p>
+
         {/* Сводка */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {FILTERS.map((item) => (
@@ -179,6 +187,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <AdminMessageRow
                 key={message.id}
                 message={message}
+                busy={actingId === message.id}
                 confirming={confirmId === message.id}
                 onApprove={() => void approve(message.id)}
                 onReject={() => void reject(message.id)}
@@ -201,6 +210,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
 interface AdminMessageRowProps {
   message: Message;
+  busy: boolean;
   confirming: boolean;
   onApprove: () => void;
   onReject: () => void;
@@ -213,6 +223,7 @@ interface AdminMessageRowProps {
 
 function AdminMessageRow({
   message,
+  busy,
   confirming,
   onApprove,
   onReject,
@@ -269,7 +280,8 @@ function AdminMessageRow({
               variant="secondary"
               size="sm"
               onClick={onApprove}
-              disabled={message.status === 'approved'}
+              loading={busy}
+              disabled={busy || message.status === 'approved'}
               className="text-success enabled:border-success/40 enabled:hover:bg-success/10"
             >
               <Check className="h-4 w-4" />
@@ -279,7 +291,8 @@ function AdminMessageRow({
               variant="secondary"
               size="sm"
               onClick={onReject}
-              disabled={message.status === 'rejected'}
+              loading={busy}
+              disabled={busy || message.status === 'rejected'}
             >
               <X className="h-4 w-4" />
               Отклонить
@@ -289,6 +302,8 @@ function AdminMessageRow({
                 variant="secondary"
                 size="sm"
                 onClick={onUnpublish}
+                loading={busy}
+                disabled={busy}
                 className="border-primary/40 text-primary hover:bg-primary/10"
               >
                 <Globe2 className="h-4 w-4" />
@@ -299,7 +314,8 @@ function AdminMessageRow({
                 variant="secondary"
                 size="sm"
                 onClick={onPublish}
-                disabled={message.status === 'rejected'}
+                loading={busy}
+                disabled={busy || message.status === 'rejected'}
                 className="enabled:border-primary/50 enabled:text-primary enabled:hover:bg-primary/10"
               >
                 <Globe className="h-4 w-4" />
@@ -310,6 +326,7 @@ function AdminMessageRow({
               variant="ghost"
               size="sm"
               onClick={onAskDelete}
+              disabled={busy}
               className="ml-auto text-danger hover:bg-danger/10"
             >
               <Trash2 className="h-4 w-4" />

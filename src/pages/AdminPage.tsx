@@ -1,11 +1,7 @@
 import { useCallback, useState } from 'react';
 import { AdminLogin } from '@/components/admin/AdminLogin';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import {
-  ADMIN_PASSWORD,
-  DEMO_ADMIN_PASSWORD,
-  IS_DEMO_PASSWORD,
-} from '@/services/config';
+import { ADMIN_PASSWORD } from '@/services/config';
 
 const STORAGE_KEY = 'obninsk70_admin_session';
 
@@ -43,12 +39,7 @@ export function AdminPage() {
   }, []);
 
   if (!authorized) {
-    return (
-      <AdminLogin
-        onSubmit={handleLogin}
-        demoPassword={IS_DEMO_PASSWORD ? DEMO_ADMIN_PASSWORD : null}
-      />
-    );
+    return <AdminLogin onSubmit={handleLogin} />;
   }
 
   return <AdminDashboard onLogout={handleLogout} />;

@@ -1,14 +1,17 @@
+export const POSTCARD_WISH_LINE_HEIGHT = 1.32;
+
+/** Высота одной строки пожелания (для смещения блока вниз). */
+export const POSTCARD_WISH_LINE_STEP = Math.round(34 * POSTCARD_WISH_LINE_HEIGHT);
+
 /** Прямоугольник пергамента на открытке 1080×1350 (px). */
 export const POSTCARD_WISH_BOX = {
   left: 248,
-  top: 370,
+  top: 370 + POSTCARD_WISH_LINE_STEP,
   width: 500,
   height: 300,
   paddingX: 20,
   paddingY: 10,
 } as const;
-
-export const POSTCARD_WISH_LINE_HEIGHT = 1.32;
 const CHAR_WIDTH_RATIO = 0.52;
 
 /** Разбивает текст по пробелам, не рвёт слова без необходимости. */
@@ -16,8 +19,9 @@ export function splitWishIntoLines(
   text: string,
   maxWidthPx: number,
   fontSizePx: number,
+  charWidthRatio: number = CHAR_WIDTH_RATIO,
 ): string[] {
-  const charWidth = fontSizePx * CHAR_WIDTH_RATIO;
+  const charWidth = fontSizePx * charWidthRatio;
   const maxChars = Math.max(10, Math.floor(maxWidthPx / charWidth));
   const words = text.trim().split(/\s+/).filter(Boolean);
   const lines: string[] = [];

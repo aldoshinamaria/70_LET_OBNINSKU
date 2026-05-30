@@ -1,14 +1,24 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import {
+  getMaxShareHint,
   getShareToMaxUrl,
   getShareToOKUrl,
-  getShareToVKUrl,
   getShareUrl,
+  getVkShareHint,
+  isMobileDevice,
+  openVkShareWindow,
+  shareToMax,
+  shareToVK,
 } from '@/utils/share';
 
 interface ShareButtonsProps {
   className?: string;
+  /** Подсказка после шеринга (например, toast в модалке успеха). */
+  onNotify?: (message: string) => void;
+  /** Узел открытки для шеринга персонального PNG. */
+  getPostcardNode?: () => HTMLElement | null;
+  postcardFileName?: string;
 }
 
 interface ShareWidgetProps {
@@ -35,6 +45,120 @@ function ShareWidget({ href, label, background, children }: ShareWidgetProps) {
     >
       {children}
     </a>
+  );
+}
+
+function VkShareWidget({
+  label,
+  background,
+  children,
+  onNotify,
+  getPostcardNode,
+  postcardFileName,
+}: Omit<ShareWidgetProps, 'href'> &
+  Pick<ShareButtonsProps, 'onNotify' | 'getPostcardNode' | 'postcardFileName'>) {
+  const [busy, setBusy] = useState(false);
+
+  const handleClick = () => {
+    if (busy) return;
+    setBusy(true);
+
+    const mobile = isMobileDevice();
+    let vkOpened = false;
+
+    if (!mobile) {
+      vkOpened = openVkShareWindow();
+      if (!vkOpened) {
+        onNotify?.('Разрешите всплывающие окна для сайта — иначе ВК не откроется');
+        setBusy(false);
+        return;
+      }
+    }
+
+    void (async () => {
+      try {
+        const result = await shareToVK({
+          postcardNode: getPostcardNode?.() ?? null,
+          postcardFileName,
+          vkAlreadyOpened: vkOpened,
+        });
+        const hint = getVkShareHint(result);
+        if (hint) onNotify?.(hint);
+      } catch {
+        if (!vkOpened && openVkShareWindow()) {
+          onNotify?.('Откройте окно ВК и прикрепите открытку из «Загрузок»');
+        } else if (!vkOpened) {
+          onNotify?.('Разрешите всплывающие окна для сайта');
+        }
+      } finally {
+        setBusy(false);
+      }
+    })();
+  };
+
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={() => void handleClick()}
+      className={cn(
+        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10',
+        'text-white shadow-sm transition-transform duration-200',
+        'hover:-translate-y-0.5 hover:shadow-card active:scale-95',
+        'disabled:pointer-events-none disabled:opacity-60',
+      )}
+      style={{ background }}
+      aria-label={`Поделиться в ${label}`}
+      title={label}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MaxShareWidget({
+  href,
+  label,
+  background,
+  children,
+  onNotify,
+}: ShareWidgetProps & { onNotify?: (message: string) => void }) {
+  const [busy, setBusy] = useState(false);
+
+  const handleClick = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const result = await shareToMax();
+      const hint = getMaxShareHint(result);
+      if (hint) onNotify?.(hint);
+    } catch {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      onNotify?.(
+        'Не удалось подготовить сообщение — откройте MAX и вставьте текст вручную',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={() => void handleClick()}
+      className={cn(
+        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10',
+        'text-white shadow-sm transition-transform duration-200',
+        'hover:-translate-y-0.5 hover:shadow-card active:scale-95',
+        'disabled:pointer-events-none disabled:opacity-60',
+      )}
+      style={{ background }}
+      aria-label={`Поделиться в ${label}`}
+      title={label}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -66,27 +190,38 @@ function MaxIcon() {
 }
 
 /** Компактные виджеты шеринга: ВКонтакте, Одноклассники, MAX. */
-export function ShareButtons({ className }: ShareButtonsProps) {
+export function ShareButtons({
+  className,
+  onNotify,
+  getPostcardNode,
+  postcardFileName,
+}: ShareButtonsProps) {
   const url = getShareUrl();
-  const vkUrl = getShareToVKUrl(url);
   const maxUrl = getShareToMaxUrl(url);
   const okUrl = getShareToOKUrl(url);
 
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
-      <ShareWidget href={vkUrl} label="ВКонтакте" background="#0077FF">
+      <VkShareWidget
+        label="ВКонтакте"
+        background="#0077FF"
+        onNotify={onNotify}
+        getPostcardNode={getPostcardNode}
+        postcardFileName={postcardFileName}
+      >
         <VkIcon />
-      </ShareWidget>
+      </VkShareWidget>
       <ShareWidget href={okUrl} label="Одноклассниках" background="#EE8208">
         <OkIcon />
       </ShareWidget>
-      <ShareWidget
+      <MaxShareWidget
         href={maxUrl}
         label="MAX"
         background="linear-gradient(135deg, #6C4BF5, #2A7FFF)"
+        onNotify={onNotify}
       >
         <MaxIcon />
-      </ShareWidget>
+      </MaxShareWidget>
     </div>
   );
 }

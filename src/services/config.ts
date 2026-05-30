@@ -7,16 +7,7 @@ import { isSupabaseConfigured } from './supabase';
  */
 export const DEMO_MODE = !isSupabaseConfigured;
 
-/** Демо-пароль администратора, если VITE_ADMIN_PASSWORD не задан. */
-export const DEMO_ADMIN_PASSWORD = 'admin2026';
+const envAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD?.trim();
 
-const envAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-const hasEnvPassword = Boolean(envAdminPassword && envAdminPassword.trim());
-
-/** Действующий пароль администратора (из ENV или демо). */
-export const ADMIN_PASSWORD = hasEnvPassword
-  ? envAdminPassword
-  : DEMO_ADMIN_PASSWORD;
-
-/** Признак того, что используется демо-пароль (для подсказки на форме входа). */
-export const IS_DEMO_PASSWORD = !hasEnvPassword;
+/** Пароль входа на /admin (переопределяется через VITE_ADMIN_PASSWORD). */
+export const ADMIN_PASSWORD = envAdminPassword || 'Kira13lublu';

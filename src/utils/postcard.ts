@@ -31,10 +31,8 @@ async function waitForFonts(): Promise<void> {
   }
 }
 
-export async function downloadPostcard(
-  node: HTMLElement,
-  fileName: string,
-): Promise<void> {
+/** PNG-открытка из DOM-узла (для шеринга и скачивания). */
+export async function renderPostcardPng(node: HTMLElement): Promise<Blob> {
   await waitForImages(node);
   await waitForFonts();
 
@@ -45,8 +43,27 @@ export async function downloadPostcard(
     cacheBust: true,
   });
 
+  const response = await fetch(dataUrl);
+  return response.blob();
+}
+
+export async function renderPostcardFile(
+  node: HTMLElement,
+  fileName: string,
+): Promise<File> {
+  const blob = await renderPostcardPng(node);
+  return new File([blob], fileName, { type: 'image/png' });
+}
+
+export async function downloadPostcard(
+  node: HTMLElement,
+  fileName: string,
+): Promise<void> {
+  const blob = await renderPostcardPng(node);
+  const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = fileName;
-  link.href = dataUrl;
+  link.href = objectUrl;
   link.click();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }

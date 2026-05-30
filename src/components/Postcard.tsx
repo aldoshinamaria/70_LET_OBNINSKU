@@ -9,6 +9,11 @@ import {
 import { postcardMessageText } from '@/utils/message';
 import { POSTCARD_LAYOUT } from '@/utils/postcardLayout';
 import {
+  fitAuthorTypography,
+  POSTCARD_AUTHOR_BOX,
+  POSTCARD_AUTHOR_LINE_HEIGHT,
+} from '@/utils/postcardAuthorText';
+import {
   fitWishTypography,
   POSTCARD_WISH_BOX,
   POSTCARD_WISH_LINE_HEIGHT,
@@ -43,6 +48,7 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
   ({ message }, ref) => {
     const wish = truncate(postcardMessageText(message), 380);
     const { fontSize, lines } = fitWishTypography(wish);
+    const authorTypography = fitAuthorTypography(message.name);
     const number = formatMessageNumber(message.message_number);
 
     return (
@@ -162,17 +168,42 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
           № {number}
         </div>
 
-        {/* Автор */}
+        {/* Автор — размер шрифта под длину имени (до 2 строк) */}
         <div
           style={{
             position: 'absolute',
-            left: POSTCARD_LAYOUT.author.left,
-            top: POSTCARD_LAYOUT.author.top,
-            width: POSTCARD_LAYOUT.author.width,
-            ...fieldTextStyle,
+            left: POSTCARD_AUTHOR_BOX.left,
+            top: POSTCARD_AUTHOR_BOX.top,
+            width: POSTCARD_AUTHOR_BOX.width,
+            height: POSTCARD_AUTHOR_BOX.maxHeight,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+            padding: `0 ${POSTCARD_AUTHOR_BOX.paddingX}px`,
           }}
         >
-          {message.name}
+          {authorTypography.lines.map((line, index) => (
+            <span
+              key={`author-${index}-${line}`}
+              style={{
+                display: 'block',
+                width: '100%',
+                fontFamily: fieldTextStyle.fontFamily,
+                fontWeight: 700,
+                fontSize: authorTypography.fontSize,
+                lineHeight: POSTCARD_AUTHOR_LINE_HEIGHT,
+                textAlign: 'center',
+                color: fieldTextStyle.color,
+                textShadow: fieldTextStyle.textShadow,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {line}
+            </span>
+          ))}
         </div>
 
         {/* Дата отправки */}
