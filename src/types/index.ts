@@ -26,12 +26,14 @@ export interface Message {
   message_to_2096: string | null;
   created_at: string;
   status: MessageStatus;
+  /** Показывать на сайте в разделе «Голос Обнинска» (лучшие пожелания). */
+  featured: boolean;
 }
 
 /** Поля послания, которые сохраняются при создании (без серверных). */
 export type MessageInsert = Omit<
   Message,
-  'id' | 'message_number' | 'created_at' | 'status'
+  'id' | 'message_number' | 'created_at' | 'status' | 'featured'
 >;
 
 /** Данные, которые отправляет форма (без серверных полей). */
@@ -45,7 +47,7 @@ export interface MessageFormData {
   consent: boolean;
 }
 
-/** Агрегированная статистика для блока со счётчиками. */
+/** Агрегированная статистика для блока «Город в цифрах». */
 export interface ProjectStats {
   participants: number;
   messages: number;
@@ -53,10 +55,25 @@ export interface ProjectStats {
   teachers: number;
   graduates: number;
   residents: number;
+  /** ISO-дата последнего послания (null, если посланий ещё нет). */
+  lastMessageAt: string | null;
+  /** Имя автора последнего послания. */
+  lastMessageName: string | null;
+  /** Короткая цитата из последнего послания (до 100 символов). */
+  lastMessageQuote: string | null;
 }
 
+/** Числовые поля для карточек категорий в блоке статистики. */
+export type StatCountKey =
+  | 'participants'
+  | 'messages'
+  | 'pupils'
+  | 'teachers'
+  | 'graduates'
+  | 'residents';
+
 export interface StatCard {
-  key: keyof ProjectStats;
+  key: StatCountKey;
   label: string;
 }
 

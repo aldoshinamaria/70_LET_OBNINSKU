@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import {
   AlertCircle,
   Check,
+  Globe,
+  Globe2,
   Inbox,
   LogOut,
   RefreshCw,
@@ -10,7 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { StatusBadge } from '@/components/StatusBadge';
+import { FeaturedBadge, StatusBadge } from '@/components/StatusBadge';
 import { useAdminMessages } from '@/hooks/useAdminMessages';
 import { formatDate, formatMessageNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
@@ -20,12 +22,13 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type StatusFilter = 'all' | MessageStatus;
+type StatusFilter = 'all' | MessageStatus | 'featured';
 
 const FILTERS: ReadonlyArray<{ value: StatusFilter; label: string }> = [
   { value: 'all', label: 'Все' },
   { value: 'pending', label: 'На модерации' },
   { value: 'approved', label: 'Одобренные' },
+  { value: 'featured', label: 'На сайте' },
   { value: 'rejected', label: 'Отклонённые' },
 ];
 
@@ -38,6 +41,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     refetch,
     approve,
     reject,
+    publish,
+    unpublish,
     remove,
   } = useAdminMessages(true);
 
@@ -50,6 +55,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       all: messages.length,
       pending: messages.filter((m) => m.status === 'pending').length,
       approved: messages.filter((m) => m.status === 'approved').length,
+      featured: messages.filter((m) => m.featured).length,
       rejected: messages.filter((m) => m.status === 'rejected').length,
     };
   }, [messages]);
@@ -57,7 +63,11 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return messages.filter((message) => {
-      const matchesStatus = filter === 'all' || message.status === filter;
+      const matchesStatus =
+        filter === 'all' ||
+        (filter === 'featured'
+          ? message.featured
+          : message.status === filter);
       if (!matchesStatus) return false;
       if (!query) return true;
       return (
@@ -98,7 +108,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       <div className="mx-auto max-w-content px-5 py-8 sm:px-8">
         {/* Сводка */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {FILTERS.map((item) => (
             <button
               key={item.value}
@@ -172,6 +182,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 confirming={confirmId === message.id}
                 onApprove={() => void approve(message.id)}
                 onReject={() => void reject(message.id)}
+                onPublish={() => void publish(message.id)}
+                onUnpublish={() => void unpublish(message.id)}
                 onAskDelete={() => setConfirmId(message.id)}
                 onCancelDelete={() => setConfirmId(null)}
                 onConfirmDelete={() => {
@@ -192,6 +204,8 @@ interface AdminMessageRowProps {
   confirming: boolean;
   onApprove: () => void;
   onReject: () => void;
+  onPublish: () => void;
+  onUnpublish: () => void;
   onAskDelete: () => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
@@ -202,6 +216,8 @@ function AdminMessageRow({
   confirming,
   onApprove,
   onReject,
+  onPublish,
+  onUnpublish,
   onAskDelete,
   onCancelDelete,
   onConfirmDelete,
@@ -214,6 +230,7 @@ function AdminMessageRow({
             № {formatMessageNumber(message.message_number)}
           </span>
           <StatusBadge status={message.status} />
+          {message.featured && <FeaturedBadge />}
         </div>
         <span className="text-xs text-secondary/70">
           {formatDate(message.created_at)}
@@ -267,6 +284,28 @@ function AdminMessageRow({
               <X className="h-4 w-4" />
               Отклонить
             </Button>
+            {message.featured ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onUnpublish}
+                className="border-primary/40 text-primary hover:bg-primary/10"
+              >
+                <Globe2 className="h-4 w-4" />
+                Снять с сайта
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onPublish}
+                disabled={message.status === 'rejected'}
+                className="enabled:border-primary/50 enabled:text-primary enabled:hover:bg-primary/10"
+              >
+                <Globe className="h-4 w-4" />
+                На сайт
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   deleteMessage,
   getAllMessages,
+  updateMessageFeatured,
   updateMessageStatus,
 } from '@/services/messages';
 import type { Message, MessageStatus } from '@/types';
@@ -14,6 +15,8 @@ interface UseAdminMessagesResult {
   refetch: () => Promise<void>;
   approve: (id: string) => Promise<void>;
   reject: (id: string) => Promise<void>;
+  publish: (id: string) => Promise<void>;
+  unpublish: (id: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
 }
 
@@ -41,27 +44,53 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
     }
   }, [enabled, refetch]);
 
-  const setStatusLocally = (id: string, status: MessageStatus) => {
+  const patchLocally = (id: string, patch: Partial<Message>) => {
     setMessages((prev) =>
       prev.map((message) =>
-        message.id === id ? { ...message, status } : message,
+        message.id === id ? { ...message, ...patch } : message,
       ),
     );
   };
 
   const changeStatus = async (id: string, status: MessageStatus) => {
     setActionError(null);
-    const previous = messages.find((m) => m.id === id)?.status;
-    setStatusLocally(id, status);
+    const previous = messages.find((m) => m.id === id);
+    const patch: Partial<Message> = { status };
+    if (status === 'rejected') patch.featured = false;
+    patchLocally(id, patch);
+
     const result = await updateMessageStatus(id, status);
-    if (!result.ok) {
-      if (previous) setStatusLocally(id, previous);
+    if (!result.ok && previous) {
+      patchLocally(id, {
+        status: previous.status,
+        featured: previous.featured,
+      });
+      setActionError(result.error);
+    }
+  };
+
+  const changeFeatured = async (id: string, featured: boolean) => {
+    setActionError(null);
+    const previous = messages.find((m) => m.id === id);
+    const patch: Partial<Message> = featured
+      ? { featured: true, status: 'approved' }
+      : { featured: false };
+    patchLocally(id, patch);
+
+    const result = await updateMessageFeatured(id, featured);
+    if (!result.ok && previous) {
+      patchLocally(id, {
+        status: previous.status,
+        featured: previous.featured,
+      });
       setActionError(result.error);
     }
   };
 
   const approve = (id: string) => changeStatus(id, 'approved');
   const reject = (id: string) => changeStatus(id, 'rejected');
+  const publish = (id: string) => changeFeatured(id, true);
+  const unpublish = (id: string) => changeFeatured(id, false);
 
   const remove = async (id: string) => {
     setActionError(null);
@@ -82,6 +111,8 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
     refetch,
     approve,
     reject,
+    publish,
+    unpublish,
     remove,
   };
 }

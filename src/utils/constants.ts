@@ -53,14 +53,21 @@ export const LOCATION_OPTIONS: readonly MessageLocation[] = [
   'другая страна',
 ];
 
+/** Карточки по категориям (общий счётчик — отдельный блок выше). */
 export const STAT_CARDS: readonly StatCard[] = [
-  { key: 'participants', label: 'Участников' },
-  { key: 'messages', label: 'Посланий' },
   { key: 'pupils', label: 'Школьников' },
   { key: 'teachers', label: 'Педагогов' },
   { key: 'graduates', label: 'Выпускников' },
   { key: 'residents', label: 'Жителей' },
 ];
+
+/** Компактные метки категорий для блока социального доказательства. */
+export const STAT_CATEGORY_CHIPS = [
+  { key: 'teachers' as const, emoji: '👨‍🏫', label: 'Педагоги' },
+  { key: 'graduates' as const, emoji: '🎓', label: 'Выпускники' },
+  { key: 'residents' as const, emoji: '🏙', label: 'Жители' },
+  { key: 'pupils' as const, emoji: '🎒', label: 'Школьники' },
+] as const;
 
 /** Ключи разделов для плавной навигации. */
 export const SECTION_IDS = {
@@ -71,31 +78,62 @@ export const SECTION_IDS = {
   voice: 'voice',
 } as const;
 
-export interface TimelinePoint {
+export type MessageJourneyIcon =
+  | 'atom'
+  | 'capsule'
+  | 'clock'
+  | 'hourglass'
+  | 'scroll';
+
+export interface MessageJourneyPoint {
   year: string;
   title: string;
   text: string;
+  icon: MessageJourneyIcon;
+  /** Карточка «Послание отправлено» — мягкое золотое свечение. */
+  glow?: boolean;
+  /** Финальная точка пути — кульминация блока. */
+  climax?: boolean;
 }
 
-export const TIMELINE: readonly TimelinePoint[] = [
+/** Лента пути послания: от истоков наукограда до открытия капсулы в 2096. */
+export const MESSAGE_JOURNEY: readonly MessageJourneyPoint[] = [
+  {
+    year: '1954',
+    title: 'Первая в мире АЭС',
+    text: 'Мирный атом становится символом города.',
+    icon: 'atom',
+  },
   {
     year: '1956',
-    title: 'Рождение наукограда',
-    text: 'Обнинск становится первым городом, где мирный атом начал служить людям.',
+    title: 'Рождение Обнинска',
+    text: 'Первый наукоград России начинает свою историю.',
+    icon: 'scroll',
+  },
+  {
+    year: '1960–1980',
+    title: 'Город науки',
+    text: 'В Обнинске развиваются научные институты и технологии будущего.',
+    icon: 'clock',
   },
   {
     year: '2026',
-    title: '70 лет городу',
-    text: 'Жители пишут послания и запечатывают их в цифровую капсулу времени.',
+    title: 'Обнинску 70 лет',
+    text: 'Жители создают цифровую капсулу времени для потомков.',
+    icon: 'capsule',
+    glow: true,
   },
   {
     year: '2061',
-    title: 'Капсула в пути',
-    text: 'Город растёт, а голоса его жителей продолжают звучать сквозь десятилетия.',
+    title: '35 лет спустя',
+    text: 'Половина пути пройдена.',
+    icon: 'hourglass',
   },
   {
     year: '2096',
     title: 'Капсула открывается',
-    text: 'Будущие поколения читают послания, написанные сегодня. Связь времён замкнётся.',
+    text: 'Жители будущего читают послания поколения 2026 года.',
+    icon: 'scroll',
+    climax: true,
   },
 ];

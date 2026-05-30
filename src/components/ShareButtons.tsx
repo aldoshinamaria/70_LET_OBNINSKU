@@ -1,10 +1,12 @@
 import { Link2 } from 'lucide-react';
+import { cn } from '@/utils/cn';
 import {
   copyToClipboard,
+  getShareText,
+  getShareToMaxUrl,
+  getShareToOKUrl,
+  getShareToVKUrl,
   getShareUrl,
-  shareToMax,
-  shareToOK,
-  shareToVK,
 } from '@/utils/share';
 
 interface ShareButtonsProps {
@@ -12,83 +14,83 @@ interface ShareButtonsProps {
   onNotify: (text: string) => void;
 }
 
-interface ShareTarget {
-  id: string;
+interface ShareLinkProps {
+  href: string;
   label: string;
   glyph: string;
   background: string;
   color?: string;
-  onClick: (url: string) => void | Promise<void>;
 }
 
+const linkBaseClass =
+  'inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors duration-200 hover:-translate-y-px hover:shadow-card active:scale-[0.98] sm:py-3.5';
+
+function ShareLink({ href, label, glyph, background, color }: ShareLinkProps) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(linkBaseClass, 'border-transparent text-white')}
+      style={{ background, color }}
+      aria-label={`Поделиться в ${label}`}
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-black/15 text-xs font-bold">
+        {glyph}
+      </span>
+      <span className="text-center leading-tight">Поделиться в {label}</span>
+    </a>
+  );
+}
+
+/**
+ * Кнопки шеринга в соцсети — ведут на официальные страницы публикации
+ * (ВКонтакте, MAX, Одноклассники).
+ */
 export function ShareButtons({ onNotify }: ShareButtonsProps) {
   const url = getShareUrl();
-
-  const targets: ShareTarget[] = [
-    {
-      id: 'vk',
-      label: 'ВКонтакте',
-      glyph: 'VK',
-      background: '#0077FF',
-      onClick: (link) => shareToVK(link),
-    },
-    {
-      id: 'max',
-      label: 'MAX',
-      glyph: 'MAX',
-      background: 'linear-gradient(135deg, #6C4BF5, #2A7FFF)',
-      onClick: async (link) => {
-        const result = await shareToMax(link);
-        if (result === 'copied') onNotify('Ссылка скопирована — вставьте её в MAX');
-        else if (result === 'failed') onNotify('Не удалось поделиться');
-      },
-    },
-    {
-      id: 'ok',
-      label: 'Одноклассники',
-      glyph: 'OK',
-      background: '#EE8208',
-      onClick: (link) => shareToOK(link),
-    },
-  ];
+  const vkUrl = getShareToVKUrl(url);
+  const maxUrl = getShareToMaxUrl(url);
+  const okUrl = getShareToOKUrl(url);
 
   const handleCopy = async () => {
-    const ok = await copyToClipboard(url);
+    const ok = await copyToClipboard(getShareText(url));
     onNotify(ok ? 'Ссылка скопирована' : 'Не удалось скопировать ссылку');
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3">
-      {targets.map((target) => (
-        <button
-          key={target.id}
-          type="button"
-          onClick={() => void target.onClick(url)}
-          className="group flex flex-col items-center gap-2"
-        >
-          <span
-            className="flex h-14 w-14 items-center justify-center rounded-2xl text-sm font-bold text-white shadow-lg transition-transform duration-200 group-hover:-translate-y-1 group-active:scale-95"
-            style={{ background: target.background, color: target.color }}
-          >
-            {target.glyph}
-          </span>
-          <span className="text-[11px] leading-tight text-secondary">
-            {target.label}
-          </span>
-        </button>
-      ))}
+    <div className="flex flex-col gap-3">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <ShareLink
+          href={vkUrl}
+          label="ВКонтакте"
+          glyph="VK"
+          background="#0077FF"
+        />
+        <ShareLink
+          href={maxUrl}
+          label="MAX"
+          glyph="MAX"
+          background="linear-gradient(135deg, #6C4BF5, #2A7FFF)"
+        />
+        <ShareLink
+          href={okUrl}
+          label="Одноклассниках"
+          glyph="OK"
+          background="#EE8208"
+        />
+      </div>
 
       <button
         type="button"
         onClick={() => void handleCopy()}
-        className="group flex flex-col items-center gap-2"
+        className={cn(
+          linkBaseClass,
+          'border-primary/40 bg-primary/5 text-primary hover:bg-primary/10',
+        )}
       >
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 text-primary transition-transform duration-200 group-hover:-translate-y-1 group-active:scale-95">
-          <Link2 className="h-5 w-5" />
-        </span>
-        <span className="text-[11px] leading-tight text-secondary">
-          Скопировать
-        </span>
+        <Link2 className="h-5 w-5 shrink-0" />
+        Скопировать ссылку на проект
       </button>
     </div>
   );

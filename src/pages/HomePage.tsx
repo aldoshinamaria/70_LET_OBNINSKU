@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { voicesFromMessages } from '@/data/sampleMessages';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/sections/Hero';
@@ -22,11 +23,16 @@ export function HomePage() {
     void refetchMessages();
   }, [refetchStats, refetchMessages]);
 
+  const heroVoices = useMemo(
+    () => (messages.length > 0 ? voicesFromMessages(messages) : undefined),
+    [messages],
+  );
+
   return (
     <>
       <Header />
       <main>
-        <Hero />
+        <Hero voices={heroVoices} />
         <Stats stats={stats} />
         <About />
         <MessageForm onSubmitted={handleSubmitted} />

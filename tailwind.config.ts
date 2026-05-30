@@ -54,12 +54,22 @@ const config: Config = {
           from: { transform: 'rotate(0deg)' },
           to: { transform: 'rotate(360deg)' },
         },
+        'capsule-3d': {
+          from: { transform: 'rotateY(0deg)' },
+          to: { transform: 'rotateY(360deg)' },
+        },
+        'orbit-spin': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         float: 'float 7s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 5s ease-in-out infinite',
         shimmer: 'shimmer 2.2s linear infinite',
         'spin-slow': 'spin-slow 32s linear infinite',
+        'capsule-3d': 'capsule-3d 16s linear infinite',
+        'orbit-spin': 'orbit-spin 52s linear infinite',
       },
     },
   },

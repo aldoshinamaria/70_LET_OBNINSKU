@@ -17,7 +17,7 @@ export function VoiceOfObninsk({ messages, loading }: VoiceOfObninskProps) {
         <SectionHeading
           eyebrow="Голос Обнинска"
           title="Что говорят жители"
-          description="Послания, прошедшие модерацию. Голоса тех, кто уже стал частью капсулы времени."
+          description="Лучшие пожелания, отобранные командой проекта. Только они появляются на странице для всех жителей."
         />
 
         <div className="mt-12 sm:mt-16">
@@ -37,7 +37,7 @@ export function VoiceOfObninsk({ messages, loading }: VoiceOfObninskProps) {
               </span>
               <h3 className="text-xl font-semibold">Капсула ждёт первых голосов</h3>
               <p className="text-secondary">
-                Одобренные послания появятся здесь. Станьте одним из первых,
+                Лучшие послания появятся здесь после публикации модератором. Станьте одним из первых,
                 кто оставит свой след в истории города.
               </p>
             </div>

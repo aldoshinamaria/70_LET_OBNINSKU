@@ -27,6 +27,7 @@ create table if not exists public.messages (
   message_to_2096  text,
   created_at       timestamptz not null default now(),
   status           text not null default 'pending',
+  featured         boolean not null default false,
 
   -- Серверная валидация данных
   constraint messages_name_len      check (char_length(name) between 1 and 40),
@@ -46,6 +47,7 @@ create table if not exists public.messages (
 create unique index if not exists messages_number_unique on public.messages (message_number);
 create index if not exists messages_status_idx     on public.messages (status);
 create index if not exists messages_created_at_idx  on public.messages (created_at desc);
+create index if not exists messages_featured_idx    on public.messages (featured) where featured = true;
 
 -- ---------------------------------------------------------------------
 -- Триггер: новые записи всегда получают статус 'pending'
@@ -81,13 +83,14 @@ create policy "public can insert messages"
   to anon, authenticated
   with check (true);
 
--- Любой посетитель видит ТОЛЬКО одобренные послания (раздел «Голос Обнинска»).
+-- Посетитель видит только лучшие пожелания, отобранные модератором для сайта.
 drop policy if exists "public can read approved" on public.messages;
-create policy "public can read approved"
+drop policy if exists "public can read featured" on public.messages;
+create policy "public can read featured"
   on public.messages
   for select
   to anon, authenticated
-  using (status = 'approved');
+  using (status = 'approved' and featured = true);
 
 -- =====================================================================
 --  АДМИН-ДОСТУП
@@ -130,6 +133,12 @@ create policy "demo admin delete"
   for delete
   to anon, authenticated
   using (true);
+
+-- ---------------------------------------------------------------------
+-- Миграция для уже развёрнутой базы (если таблица создана ранее)
+-- ---------------------------------------------------------------------
+-- alter table public.messages add column if not exists featured boolean not null default false;
+-- create index if not exists messages_featured_idx on public.messages (featured) where featured = true;
 
 -- =====================================================================
 --  Готово. Таблица public.messages создана и защищена RLS.

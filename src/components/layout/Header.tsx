@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { ProjectLogo } from '@/components/brand/ProjectLogo';
 import { SECTION_IDS } from '@/utils/constants';
 import { scrollToSection } from '@/utils/scroll';
 import { cn } from '@/utils/cn';
@@ -39,9 +40,7 @@ export function Header() {
           onClick={() => scrollToSection(SECTION_IDS.hero)}
           className="flex items-center gap-3 text-left"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/40 bg-primary/10">
-            <span className="font-display text-lg font-bold text-primary">70</span>
-          </span>
+          <ProjectLogo variant="mark" />
           <span className="hidden text-sm font-semibold leading-tight sm:block">
             Капсула времени
             <span className="block text-xs font-normal text-secondary">

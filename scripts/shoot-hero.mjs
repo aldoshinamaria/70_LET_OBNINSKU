@@ -18,9 +18,9 @@ async function shoot(viewport, name) {
   // Для репрезентативного кадра фиксируем капсулу вертикально
   // (живой сайт при этом продолжает медленно вращаться).
   await page.evaluate(() => {
-    document.querySelectorAll('.animate-spin-slow').forEach((el) => {
+    document.querySelectorAll('.capsule-sway-3d').forEach((el) => {
       el.style.animation = 'none';
-      el.style.transform = 'rotate(0deg)';
+      el.style.transform = 'rotateY(0deg)';
     });
   });
   await page.waitForTimeout(200);

@@ -2,8 +2,8 @@ import { forwardRef, type CSSProperties } from 'react';
 import postcardTemplate from '@/assets/postcard-template.png';
 import { CAPSULE_OPEN_DATE_LABEL } from '@/utils/constants';
 import {
-  formatDate,
   formatMessageNumber,
+  formatPostcardDate,
   truncate,
 } from '@/utils/format';
 import { postcardMessageText } from '@/utils/message';
@@ -151,7 +151,7 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
             fontSize: 24,
           }}
         >
-          {formatDate(message.created_at)}
+          {formatPostcardDate(message.created_at)}
         </div>
 
         {/* Номер послания */}

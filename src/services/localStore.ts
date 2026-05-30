@@ -4,11 +4,11 @@ import type {
   MessageStatus,
   ProjectStats,
 } from '@/types';
+import { truncate } from '@/utils/format';
 
 /**
  * Демо-хранилище на localStorage. Полностью повторяет поведение Supabase:
- * номера посланий по возрастанию, статусы модерации, агрегированная
- * статистика. Используется автоматически, когда Supabase не настроен.
+ * номера посланий по возрастанию, статусы модерации, публикация на сайте.
  */
 
 const STORAGE_KEY = 'obninsk70_demo_messages';
@@ -32,12 +32,21 @@ function isStorageAvailable(): boolean {
   }
 }
 
+function normalizeMessage(raw: Message): Message {
+  return {
+    ...raw,
+    featured: Boolean(raw.featured),
+  };
+}
+
 /** Несколько живых демо-посланий, чтобы проект «дышал» без бэкенда. */
 function buildSeed(): Message[] {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
 
-  const seed: Array<Omit<Message, 'id' | 'message_number' | 'created_at'>> = [
+  const seed: Array<
+    Omit<Message, 'id' | 'message_number' | 'created_at'>
+  > = [
     {
       name: 'Анна',
       category: 'педагог',
@@ -49,6 +58,7 @@ function buildSeed(): Message[] {
       message_to_2096:
         'Берегите наследие первого наукограда. Мы верили в вас задолго до вашего рождения.',
       status: 'approved',
+      featured: true,
     },
     {
       name: 'Дмитрий',
@@ -60,6 +70,7 @@ function buildSeed(): Message[] {
         'Обнинск будущего — это умный город, где технологии служат людям, а парки соединяют поколения.',
       message_to_2096: '',
       status: 'approved',
+      featured: true,
     },
     {
       name: 'Мария',
@@ -72,6 +83,19 @@ function buildSeed(): Message[] {
       message_to_2096:
         'Если читаете это — значит, мечты сбываются. Продолжайте мечтать смелее нас.',
       status: 'approved',
+      featured: true,
+    },
+    {
+      name: 'Игорь',
+      category: 'житель города',
+      location: 'Обнинск',
+      wish_to_city:
+        'Желаю городу спокойствия, развития науки и бережного отношения к истории наукограда.',
+      future_city:
+        'Вижу Обнинск, где молодёжь остаётся в городе, а каждая улица хранит память о великих открытиях.',
+      message_to_2096: '',
+      status: 'approved',
+      featured: false,
     },
     {
       name: 'Сергей',
@@ -83,6 +107,7 @@ function buildSeed(): Message[] {
         'Вижу город, где сохранили историю первой АЭС и при этом смело шагнули в будущее.',
       message_to_2096: '',
       status: 'pending',
+      featured: false,
     },
   ];
 
@@ -101,7 +126,6 @@ function readAll(): Message[] {
     const raw = localStorage.getItem(STORAGE_KEY);
 
     if (raw === null) {
-      // Первичная инициализация: засеваем демо-данные один раз.
       if (localStorage.getItem(SEED_FLAG_KEY) === 'done') {
         return [];
       }
@@ -112,7 +136,8 @@ function readAll(): Message[] {
     }
 
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? (parsed as Message[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    return (parsed as Message[]).map(normalizeMessage);
   } catch {
     return [];
   }
@@ -143,14 +168,16 @@ export function localCreateMessage(payload: MessageInsert): Message {
     message_number: nextNumber(messages),
     created_at: new Date().toISOString(),
     status: 'pending',
+    featured: false,
   };
   writeAll([...messages, message]);
   return message;
 }
 
+/** Послания для публичного раздела «Голос Обнинска» — только лучшие на сайте. */
 export function localGetApprovedMessages(limit: number): Message[] {
   return readAll()
-    .filter((m) => m.status === 'approved')
+    .filter((m) => m.status === 'approved' && m.featured)
     .sort(byNewest)
     .slice(0, limit);
 }
@@ -160,7 +187,8 @@ export function localGetAllMessages(): Message[] {
 }
 
 export function localGetStats(): ProjectStats {
-  const rows = readAll();
+  const rows = readAll().sort(byNewest);
+  const latest = rows[0];
   const stats: ProjectStats = {
     participants: rows.length,
     messages: rows.length,
@@ -168,6 +196,17 @@ export function localGetStats(): ProjectStats {
     teachers: 0,
     graduates: 0,
     residents: 0,
+    lastMessageAt: latest?.created_at ?? null,
+    lastMessageName: latest?.name ?? null,
+    lastMessageQuote: latest
+      ? truncate(
+          latest.message_to_2096?.trim() ||
+            latest.wish_to_city?.trim() ||
+            latest.future_city?.trim() ||
+            '',
+          100,
+        ) || null
+      : null,
   };
 
   for (const row of rows) {
@@ -199,7 +238,34 @@ export function localUpdateMessageStatus(
   const messages = readAll();
   const exists = messages.some((m) => m.id === id);
   if (!exists) return false;
-  writeAll(messages.map((m) => (m.id === id ? { ...m, status } : m)));
+  writeAll(
+    messages.map((m) => {
+      if (m.id !== id) return m;
+      const next: Message = { ...m, status };
+      if (status === 'rejected') next.featured = false;
+      return next;
+    }),
+  );
+  return true;
+}
+
+/** Публикация / снятие с сайта (лучшие пожелания). */
+export function localUpdateMessageFeatured(
+  id: string,
+  featured: boolean,
+): boolean {
+  const messages = readAll();
+  const exists = messages.some((m) => m.id === id);
+  if (!exists) return false;
+  writeAll(
+    messages.map((m) => {
+      if (m.id !== id) return m;
+      if (featured) {
+        return { ...m, status: 'approved' as MessageStatus, featured: true };
+      }
+      return { ...m, featured: false };
+    }),
+  );
   return true;
 }
 

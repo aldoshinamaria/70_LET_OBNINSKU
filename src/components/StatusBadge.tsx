@@ -29,3 +29,12 @@ export function StatusBadge({ status }: { status: MessageStatus }) {
     </span>
   );
 }
+
+/** Маркер публикации на публичной странице сайта. */
+export function FeaturedBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full border border-primary/50 bg-primary/15 px-3 py-1 text-xs font-medium text-primary">
+      На сайте
+    </span>
+  );
+}

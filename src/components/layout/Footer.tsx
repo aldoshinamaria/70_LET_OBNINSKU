@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MaLogo } from '@/components/brand/MaLogo';
+import { ProjectLogo } from '@/components/brand/ProjectLogo';
 import { AUTHOR_SIGNATURE, PROJECT_NAME } from '@/utils/constants';
 
 export function Footer() {
@@ -8,11 +9,9 @@ export function Footer() {
     <footer className="relative border-t border-border bg-background/60">
       <div className="mx-auto max-w-content px-5 py-12 sm:px-8 lg:px-12">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/40 bg-primary/10">
-              <span className="font-display text-lg font-bold text-primary">70</span>
-            </span>
-            <div>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
+            <ProjectLogo variant="full" />
+            <div className="text-center sm:text-left">
               <p className="text-sm font-semibold">{PROJECT_NAME}</p>
               <p className="text-xs text-secondary">
                 Цифровой спецпроект к юбилею города

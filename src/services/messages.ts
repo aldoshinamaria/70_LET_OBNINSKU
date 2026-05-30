@@ -5,9 +5,11 @@ import {
   localGetAllMessages,
   localGetApprovedMessages,
   localGetStats,
+  localUpdateMessageFeatured,
   localUpdateMessageStatus,
 } from './localStore';
 import { CATEGORY_OPTIONS, LOCATION_OPTIONS, FORM_LIMITS } from '@/utils/constants';
+import { truncate } from '@/utils/format';
 import type {
   Message,
   MessageFormData,
@@ -80,7 +82,7 @@ export async function createMessage(
   }
 }
 
-/** Возвращает только одобренные послания для раздела «Голос Обнинска». */
+/** Возвращает лучшие послания, опубликованные на сайте («Голос Обнинска»). */
 export async function getApprovedMessages(
   limit = 60,
 ): Promise<ServiceResult<Message[]>> {
@@ -94,6 +96,7 @@ export async function getApprovedMessages(
       .from(MESSAGES_TABLE)
       .select('*')
       .eq('status', 'approved')
+      .eq('featured', true)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -114,7 +117,23 @@ const EMPTY_STATS: ProjectStats = {
   teachers: 0,
   graduates: 0,
   residents: 0,
+  lastMessageAt: null,
+  lastMessageName: null,
+  lastMessageQuote: null,
 };
+
+function excerptFromMessage(row: {
+  wish_to_city?: string;
+  future_city?: string;
+  message_to_2096?: string | null;
+}): string {
+  const text =
+    row.message_to_2096?.trim() ||
+    row.wish_to_city?.trim() ||
+    row.future_city?.trim() ||
+    '';
+  return text ? truncate(text, 100) : '';
+}
 
 /**
  * Считает агрегированную статистику. Если БД не настроена или произошла
@@ -129,16 +148,33 @@ export async function getStats(): Promise<ServiceResult<ProjectStats>> {
   try {
     const { data, error } = await supabase
       .from(MESSAGES_TABLE)
-      .select('category');
+      .select('category, name, created_at, wish_to_city, future_city, message_to_2096')
+      .order('created_at', { ascending: false });
 
     if (error) {
       return { ok: false, error: error.message };
     }
 
-    const rows = (data ?? []) as Array<Pick<Message, 'category'>>;
+    const rows = (data ?? []) as Array<
+      Pick<
+        Message,
+        | 'category'
+        | 'name'
+        | 'created_at'
+        | 'wish_to_city'
+        | 'future_city'
+        | 'message_to_2096'
+      >
+    >;
     const stats: ProjectStats = { ...EMPTY_STATS };
     stats.participants = rows.length;
     stats.messages = rows.length;
+
+    if (rows.length > 0) {
+      stats.lastMessageAt = rows[0].created_at;
+      stats.lastMessageName = rows[0].name;
+      stats.lastMessageQuote = excerptFromMessage(rows[0]) || null;
+    }
 
     for (const row of rows) {
       switch (row.category) {
@@ -202,10 +238,46 @@ export async function updateMessageStatus(
       : { ok: false, error: 'Послание не найдено.' };
   }
 
+  const patch: { status: MessageStatus; featured?: boolean } = { status };
+  if (status === 'rejected') patch.featured = false;
+
   try {
     const { error } = await supabase
       .from(MESSAGES_TABLE)
-      .update({ status })
+      .update(patch)
+      .eq('id', id);
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+
+    return { ok: true, data: true };
+  } catch {
+    return { ok: false, error: NETWORK_ERROR };
+  }
+}
+
+/** Публикует послание на сайте (лучшие пожелания) или снимает с публикации. */
+export async function updateMessageFeatured(
+  id: string,
+  featured: boolean,
+): Promise<ServiceResult<true>> {
+  const supabase = useLocal ? null : await getSupabase();
+  if (!supabase) {
+    const ok = localUpdateMessageFeatured(id, featured);
+    return ok
+      ? { ok: true, data: true }
+      : { ok: false, error: 'Послание не найдено.' };
+  }
+
+  const patch = featured
+    ? { featured: true, status: 'approved' as MessageStatus }
+    : { featured: false };
+
+  try {
+    const { error } = await supabase
+      .from(MESSAGES_TABLE)
+      .update(patch)
       .eq('id', id);
 
     if (error) {

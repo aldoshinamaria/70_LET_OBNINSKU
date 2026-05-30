@@ -225,9 +225,14 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
               </div>
             </div>
 
-            <ShareButtons onNotify={setToast} />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-secondary">
+                Поделиться проектом
+              </p>
+              <ShareButtons onNotify={setToast} />
+            </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row">
               <Button
                 fullWidth
                 size="lg"

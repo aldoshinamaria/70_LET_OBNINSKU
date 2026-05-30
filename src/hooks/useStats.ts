@@ -9,6 +9,9 @@ const INITIAL_STATS: ProjectStats = {
   teachers: 0,
   graduates: 0,
   residents: 0,
+  lastMessageAt: null,
+  lastMessageName: null,
+  lastMessageQuote: null,
 };
 
 interface UseStatsResult {

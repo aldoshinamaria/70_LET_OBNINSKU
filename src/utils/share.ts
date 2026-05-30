@@ -8,42 +8,66 @@ export function getShareUrl(): string {
   return 'https://obninsk-70.ru';
 }
 
+/** Текст, который уходит в соцсети вместе со ссылкой. */
+export function getShareText(url: string = getShareUrl()): string {
+  return `${PROJECT_SHARE_TEXT} ${url}`;
+}
+
 function openShareWindow(url: string): void {
-  window.open(url, '_blank', 'noopener,noreferrer,width=720,height=540');
+  window.open(url, '_blank', 'noopener,noreferrer,width=720,height=640');
 }
 
-/** Поделиться во ВКонтакте. */
-export function shareToVK(url: string, text: string = PROJECT_SHARE_TEXT): void {
-  const target = `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`;
-  openShareWindow(target);
+/** Страница «Поделиться» ВКонтакте. */
+export function getShareToVKUrl(
+  url: string = getShareUrl(),
+  text: string = PROJECT_SHARE_TEXT,
+): string {
+  const params = new URLSearchParams({
+    url,
+    title: text,
+    comment: text,
+  });
+  return `https://vk.com/share.php?${params.toString()}`;
 }
 
-/** Поделиться в Одноклассниках. */
-export function shareToOK(url: string, text: string = PROJECT_SHARE_TEXT): void {
-  const target = `https://connect.ok.ru/offer?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`;
-  openShareWindow(target);
+/** Страница «Поделиться» Одноклассники. */
+export function getShareToOKUrl(
+  url: string = getShareUrl(),
+  text: string = PROJECT_SHARE_TEXT,
+): string {
+  const params = new URLSearchParams({
+    url,
+    title: text,
+  });
+  return `https://connect.ok.ru/offer?${params.toString()}`;
 }
 
 /**
- * Поделиться в MAX. У мессенджера нет публичного web-intent, поэтому
- * используем системный диалог «Поделиться» (отлично работает на мобильных),
- * а при его отсутствии — копируем ссылку с текстом.
- * Возвращает 'shared' | 'copied' | 'failed'.
+ * Экран «Отправить в MAX» (официальный диплинк :share).
+ * @see https://dev.max.ru/help/deeplinks
  */
-export async function shareToMax(
-  url: string,
+export function getShareToMaxUrl(
+  url: string = getShareUrl(),
   text: string = PROJECT_SHARE_TEXT,
-): Promise<'shared' | 'copied' | 'failed'> {
-  if (typeof navigator !== 'undefined' && 'share' in navigator) {
-    try {
-      await navigator.share({ title: 'Капсула времени Обнинск-70', text, url });
-      return 'shared';
-    } catch {
-      // Пользователь закрыл диалог — пробуем копирование как запасной вариант.
-    }
-  }
-  const copied = await copyToClipboard(`${text} ${url}`);
-  return copied ? 'copied' : 'failed';
+): string {
+  const body = text === PROJECT_SHARE_TEXT ? getShareText(url) : `${text} ${url}`;
+  const params = new URLSearchParams({ text: body });
+  return `https://max.ru/:share?${params.toString()}`;
+}
+
+/** Открывает страницу шеринга ВКонтакте в новой вкладке. */
+export function shareToVK(url?: string, text?: string): void {
+  openShareWindow(getShareToVKUrl(url, text));
+}
+
+/** Открывает страницу шеринга Одноклассников в новой вкладке. */
+export function shareToOK(url?: string, text?: string): void {
+  openShareWindow(getShareToOKUrl(url, text));
+}
+
+/** Открывает экран «Отправить в MAX» на max.ru. */
+export function shareToMax(url?: string, text?: string): void {
+  openShareWindow(getShareToMaxUrl(url, text));
 }
 
 /** Копирует ссылку в буфер обмена. Возвращает true при успехе. */
