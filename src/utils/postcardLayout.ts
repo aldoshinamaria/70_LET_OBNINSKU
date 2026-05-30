@@ -16,8 +16,8 @@ export const POSTCARD_LAYOUT = {
     top: '46.8%',
     width: '14%',
   },
-  author: { left: '5.5%', top: '74.2%', width: '20%' },
-  sentDate: { left: '27%', top: '74.2%', width: '21%' },
-  messageNumber: { left: '49%', top: '74.2%', width: '21%' },
-  openingDate: { left: '71%', top: '74.2%', width: '24%' },
+  author: { left: '7.5%', top: '74.2%', width: '20%' },
+  sentDate: { left: '29.25%', top: '74.2%', width: '21%' },
+  messageNumber: { left: '51.75%', top: '74.2%', width: '21%' },
+  openingDate: { left: '73.75%', top: '74.2%', width: '24%' },
 } as const;

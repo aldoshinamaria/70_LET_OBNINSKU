@@ -120,6 +120,27 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
               </span>
             ))}
           </div>
+          <svg
+            aria-hidden
+            viewBox="0 0 32 28"
+            style={{
+              position: 'absolute',
+              right: 28,
+              bottom: 10,
+              width: 34,
+              height: 30,
+              opacity: 0.92,
+            }}
+          >
+            <path
+              d="M16 24.5c-.4 0-.8-.2-1.1-.5C9.2 19.2 4 15.1 4 10.2 4 6.8 6.8 4 10.2 4c2.2 0 4.2 1.1 5.4 2.9.5-.7 1.2-1.3 2-1.7 1.2-.6 2.6-.9 4-.9 3.4 0 6.2 2.8 6.2 6.2 0 4.9-5.2 9-10.9 13.8-.3.3-.7.5-1.1.5z"
+              fill="none"
+              stroke="#2A1F0E"
+              strokeWidth="1.35"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
 
         {/* Номер на крышке капсулы */}

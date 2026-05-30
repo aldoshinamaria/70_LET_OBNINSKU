@@ -173,7 +173,7 @@ export function MessageJourneyTimeline() {
       : ((activeThrough + 1) / MESSAGE_JOURNEY.length) * 100;
 
   return (
-    <div ref={containerRef} className="relative mt-16 sm:mt-20 lg:mt-12">
+    <div ref={containerRef} className="relative mt-16 overflow-x-clip sm:mt-20 lg:mt-12">
       {/* Энергетический луч */}
       <div
         className="pointer-events-none absolute bottom-0 left-6 top-0 w-6 -translate-x-1/2 sm:left-8 lg:left-1/2"

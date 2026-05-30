@@ -14,11 +14,11 @@ export function Hero({ voices }: HeroProps) {
   return (
     <section
       id={SECTION_IDS.hero}
-      className="relative flex min-h-screen items-center pt-28 pb-16 sm:pt-32 lg:min-h-0 lg:py-20 xl:py-24"
+      className="relative flex min-h-screen items-center overflow-x-clip pt-28 pb-16 sm:pt-32 lg:min-h-0 lg:py-20 xl:py-24"
     >
-      <div className="mx-auto grid w-full max-w-content items-center gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:gap-8 xl:gap-10 lg:px-12">
+      <div className="mx-auto grid w-full min-w-0 max-w-content items-center gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:gap-8 xl:gap-10 lg:px-12">
         {/* Левая колонка */}
-        <div className="flex flex-col gap-5 lg:gap-4">
+        <div className="flex min-w-0 flex-col gap-5 lg:gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,7 +100,7 @@ export function Hero({ voices }: HeroProps) {
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.1, ease: 'easeOut' }}
-          className="relative w-full"
+          className="relative w-full min-w-0 overflow-hidden"
         >
           <CapsuleStage voices={voices} />
         </motion.div>

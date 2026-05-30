@@ -16,7 +16,7 @@ export function MessageCard({ message, compact = false }: MessageCardProps) {
     <article
       className={
         compact
-          ? 'glass-card flex h-[220px] flex-col items-center justify-between rounded-2xl border-primary/20 px-5 py-6 text-center transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_28px_rgba(217,179,108,0.12)]'
+          ? 'glass-card flex min-h-[220px] w-full flex-col items-center justify-center gap-4 rounded-2xl border-primary/20 px-4 py-5 text-center'
           : 'glass-card flex h-full flex-col items-center justify-between gap-6 rounded-2xl border-primary/20 px-6 py-8 text-center transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_36px_rgba(217,179,108,0.14)] sm:px-7 sm:py-9'
       }
     >
@@ -34,7 +34,7 @@ export function MessageCard({ message, compact = false }: MessageCardProps) {
       <div
         className={
           compact
-            ? 'flex w-full flex-col items-center gap-0.5 border-t border-primary/10 pt-3'
+            ? 'flex w-full flex-col items-center gap-0.5 pt-1'
             : 'flex w-full flex-col items-center gap-1 border-t border-primary/10 pt-4'
         }
       >

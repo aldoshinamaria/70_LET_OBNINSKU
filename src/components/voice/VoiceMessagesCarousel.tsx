@@ -21,12 +21,21 @@ export function VoiceMessagesCarousel({ messages }: VoiceMessagesCarouselProps) 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
+  const [coarsePointer, setCoarsePointer] = useState(false);
   const manualTimerRef = useRef<number | null>(null);
 
   const loopMessages = useMemo(
     () => (messages.length > 1 ? [...messages, ...messages] : messages),
     [messages],
   );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)');
+    const update = () => setCoarsePointer(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const pauseManual = useCallback(() => {
     setManualPaused(true);
@@ -55,7 +64,7 @@ export function VoiceMessagesCarousel({ messages }: VoiceMessagesCarouselProps) 
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || reduced || messages.length < 2) return;
+    if (!el || reduced || coarsePointer || messages.length < 2) return;
     if (hoverPaused || manualPaused) return;
 
     let raf = 0;
@@ -73,79 +82,97 @@ export function VoiceMessagesCarousel({ messages }: VoiceMessagesCarouselProps) 
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, hoverPaused, manualPaused, messages.length]);
+  }, [
+    reduced,
+    coarsePointer,
+    hoverPaused,
+    manualPaused,
+    messages.length,
+  ]);
 
   const showControls = messages.length > 1;
 
   return (
-    <div className="relative">
-      {showControls && (
-      <button
-        type="button"
-        aria-label="Предыдущие послания"
-        onClick={() => scrollByStep(-1)}
-        className={cn(
-          'absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full',
-          'border border-primary/35 bg-surface-elevated/95 text-primary shadow-card backdrop-blur-sm',
-          'transition-all duration-300 hover:border-primary/60 hover:bg-primary/10',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-        )}
-      >
-        <ChevronLeft className="h-5 w-5" aria-hidden />
-      </button>
-      )}
-
-      {showControls && (
-      <button
-        type="button"
-        aria-label="Следующие послания"
-        onClick={() => scrollByStep(1)}
-        className={cn(
-          'absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full',
-          'border border-primary/35 bg-surface-elevated/95 text-primary shadow-card backdrop-blur-sm',
-          'transition-all duration-300 hover:border-primary/60 hover:bg-primary/10',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-        )}
-      >
-        <ChevronRight className="h-5 w-5" aria-hidden />
-      </button>
-      )}
-
-      {showControls && (
-        <>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-14 bg-gradient-to-r from-background via-background/80 to-transparent sm:w-20"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-gradient-to-l from-background via-background/80 to-transparent sm:w-20"
-      />
-        </>
-      )}
-
-      <div
-        ref={scrollRef}
-        className={cn(
-          'no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden py-2',
-          showControls ? 'px-12 sm:px-14' : 'justify-center px-4',
-        )}
-        onMouseEnter={() => setHoverPaused(true)}
-        onMouseLeave={() => setHoverPaused(false)}
-        onFocus={() => setHoverPaused(true)}
-        onBlur={() => setHoverPaused(false)}
-        onTouchStart={() => pauseManual()}
-      >
-        {loopMessages.map((message, index) => (
-          <div
-            key={`${message.id}-${index}`}
-            className="w-[300px] shrink-0 snap-center"
-            style={{ scrollSnapAlign: 'center' }}
-          >
+    <>
+      {/* Мобильные: вертикальный список — не обрезается overflow-x: clip */}
+      <ul className="flex min-w-0 flex-col gap-4 sm:hidden">
+        {messages.map((message) => (
+          <li key={message.id} className="min-w-0">
             <MessageCard message={message} compact />
-          </div>
+          </li>
         ))}
+      </ul>
+
+      {/* Планшет и desktop: горизонтальная лента */}
+      <div className="relative hidden min-w-0 sm:block">
+        {showControls && (
+          <button
+            type="button"
+            aria-label="Предыдущие послания"
+            onClick={() => scrollByStep(-1)}
+            className={cn(
+              'absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full',
+              'border border-primary/35 bg-surface-elevated/95 text-primary shadow-card backdrop-blur-sm',
+              'transition-all duration-300 hover:border-primary/60 hover:bg-primary/10',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            )}
+          >
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          </button>
+        )}
+
+        {showControls && (
+          <button
+            type="button"
+            aria-label="Следующие послания"
+            onClick={() => scrollByStep(1)}
+            className={cn(
+              'absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full',
+              'border border-primary/35 bg-surface-elevated/95 text-primary shadow-card backdrop-blur-sm',
+              'transition-all duration-300 hover:border-primary/60 hover:bg-primary/10',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+            )}
+          >
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          </button>
+        )}
+
+        {showControls && (
+          <>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background via-background/80 to-transparent"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background via-background/80 to-transparent"
+            />
+          </>
+        )}
+
+        <div
+          ref={scrollRef}
+          className={cn(
+            'no-scrollbar flex min-h-[228px] snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain py-2',
+            '[touch-action:pan-x]',
+            showControls ? 'scroll-px-12 px-12' : 'justify-center px-4',
+          )}
+          onMouseEnter={() => setHoverPaused(true)}
+          onMouseLeave={() => setHoverPaused(false)}
+          onFocus={() => setHoverPaused(true)}
+          onBlur={() => setHoverPaused(false)}
+          onTouchStart={() => pauseManual()}
+        >
+          {loopMessages.map((message, index) => (
+            <div
+              key={`${message.id}-${index}`}
+              className="w-[300px] max-w-[calc(100%-6rem)] shrink-0 snap-center"
+            >
+              <MessageCard message={message} compact />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

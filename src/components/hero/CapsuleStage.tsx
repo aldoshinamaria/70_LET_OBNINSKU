@@ -22,9 +22,9 @@ export function CapsuleStage({ voices = sampleMessages }: CapsuleStageProps) {
     phase === 'show';
 
   return (
-    <div className="relative flex w-full flex-col items-center">
-      <div className="relative mx-auto w-full max-w-full lg:max-w-none">
-        <div className="relative aspect-[3/4] min-h-[380px] w-full overflow-visible sm:min-h-[460px] lg:min-h-[560px] xl:min-h-[620px]">
+    <div className="relative flex w-full min-w-0 flex-col items-center overflow-hidden">
+      <div className="relative mx-auto w-full min-w-0 max-w-full lg:max-w-none">
+        <div className="relative aspect-[3/4] min-h-[340px] w-full overflow-hidden sm:min-h-[420px] lg:min-h-[560px] xl:min-h-[620px]">
           <motion.div
             aria-hidden
             className="pointer-events-none absolute left-1/2 top-1/2 h-[62%] w-[52%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl"
@@ -34,13 +34,12 @@ export function CapsuleStage({ voices = sampleMessages }: CapsuleStageProps) {
 
           {/* Общий центр: капсула и орбита в одной 3D-сцене */}
           <div
-            className="capsule-stage-hub absolute left-1/2 top-1/2 overflow-visible"
+            className="capsule-stage-hub absolute left-1/2 top-1/2 max-w-[calc(100vw-2.5rem)]"
             style={{
-              width: `min(100%, ${ORBIT_RING_BOX_PX}px)`,
-              height: `min(100%, ${ORBIT_RING_BOX_PX}px)`,
+              width: `min(calc(100vw - 2.5rem), ${ORBIT_RING_BOX_PX}px)`,
+              height: `min(calc(100vw - 2.5rem), ${ORBIT_RING_BOX_PX}px)`,
               transform: 'translate(-50%, -50%)',
               perspective: '1400px',
-              overflow: 'visible',
             }}
           >
             <CapsuleOrbitRing

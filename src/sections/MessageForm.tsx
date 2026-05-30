@@ -87,7 +87,7 @@ export function MessageForm({ onSubmitted }: MessageFormProps) {
           eyebrow="Ваше послание"
           title="Оставьте свой след в истории"
           description="Заполните форму — и ваши слова навсегда останутся в цифровой капсуле времени Обнинска."
-          descriptionClassName="mx-auto text-center lg:block lg:w-max lg:max-w-none lg:whitespace-nowrap lg:text-[1.0625rem] xl:text-lg"
+          descriptionClassName="mx-auto max-w-full text-center xl:block xl:w-max xl:max-w-none xl:whitespace-nowrap xl:text-lg"
         />
       </div>
 

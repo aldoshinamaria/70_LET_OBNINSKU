@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
 interface SectionHeadingProps {
   eyebrow?: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   align?: 'left' | 'center';
   className?: string;
   descriptionClassName?: string;
@@ -30,13 +31,13 @@ export function SectionHeading({
           {eyebrow}
         </span>
       )}
-      <h2 className="font-display text-3xl font-semibold leading-tight text-balance sm:text-4xl lg:text-5xl">
+      <h2 className="max-w-full font-display text-3xl font-semibold leading-tight text-balance sm:text-4xl lg:text-5xl">
         {title}
       </h2>
       {description && (
         <p
           className={cn(
-            'max-w-2xl text-base leading-relaxed text-secondary sm:text-lg',
+            'max-w-full text-base leading-relaxed text-secondary sm:max-w-2xl sm:text-lg',
             align === 'center' && 'mx-auto',
             descriptionClassName,
           )}

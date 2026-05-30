@@ -19,12 +19,12 @@ export function About() {
           eyebrow="Путь послания"
           title="Из Обнинска 2026 года — в Обнинск 2096 года"
           description="Сегодня жители города отправляют в будущее не данные и документы, а свои воспоминания, мечты и пожелания."
-          descriptionClassName="lg:max-w-none lg:whitespace-nowrap lg:text-[1.0625rem] xl:text-lg"
+          descriptionClassName="max-w-full xl:max-w-none xl:whitespace-nowrap xl:text-lg"
         />
 
         <Reveal className="mx-auto mt-10 max-w-3xl lg:mt-7 lg:max-w-none" delay={0.08}>
           <div className="space-y-5 text-center text-base leading-relaxed text-secondary sm:text-lg">
-            <p className="lg:whitespace-nowrap lg:text-[1.0625rem] xl:text-lg">
+            <p className="max-w-full xl:whitespace-nowrap xl:text-lg">
               Через 70 лет цифровая капсула времени откроется для нового поколения жителей Обнинска.
             </p>
             <p>
@@ -51,7 +51,7 @@ export function About() {
             className="pointer-events-none absolute -inset-x-6 -top-8 h-32 rounded-full bg-primary/[0.06] blur-3xl"
           />
           <div className="relative space-y-5">
-            <p className="font-display text-xl leading-snug text-text sm:text-2xl lg:whitespace-nowrap lg:text-[1.4rem] xl:text-2xl">
+            <p className="font-display text-xl leading-snug text-text sm:text-2xl xl:whitespace-nowrap xl:text-2xl">
               Возможно, через 70 лет кто-то откроет капсулу и прочитает именно ваши слова.
             </p>
             <p className="text-base leading-relaxed text-secondary sm:text-lg">

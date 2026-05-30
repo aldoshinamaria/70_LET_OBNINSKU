@@ -11,7 +11,8 @@ import { useStats } from '@/hooks/useStats';
 import { useApprovedMessages } from '@/hooks/useApprovedMessages';
 
 export function HomePage() {
-  const { stats, refetch: refetchStats } = useStats();
+  const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } =
+    useStats();
   const {
     messages,
     loading: messagesLoading,
@@ -31,9 +32,9 @@ export function HomePage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="min-w-0 overflow-x-clip">
         <Hero voices={heroVoices} />
-        <Stats stats={stats} />
+        <Stats stats={stats} loading={statsLoading} error={statsError} />
         <About />
         <MessageForm onSubmitted={handleSubmitted} />
         <VoiceOfObninsk messages={messages} loading={messagesLoading} />

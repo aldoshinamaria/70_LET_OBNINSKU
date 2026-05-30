@@ -1,45 +1,43 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getStats } from '@/services/messages';
+import { EMPTY_STATS, getStats } from '@/services/messages';
 import type { ProjectStats } from '@/types';
 
-const INITIAL_STATS: ProjectStats = {
-  participants: 0,
-  messages: 0,
-  pupils: 0,
-  teachers: 0,
-  graduates: 0,
-  residents: 0,
-  lastMessageAt: null,
-  lastMessageName: null,
-  lastMessageQuote: null,
-};
+interface UseStatsOptions {
+  /** Показать индикатор загрузки (только при первом запросе или явном showLoading). */
+  showLoading?: boolean;
+}
 
 interface UseStatsResult {
   stats: ProjectStats;
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: (options?: UseStatsOptions) => Promise<void>;
 }
 
 export function useStats(): UseStatsResult {
-  const [stats, setStats] = useState<ProjectStats>(INITIAL_STATS);
+  const [stats, setStats] = useState<ProjectStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = useCallback(async () => {
-    setLoading(true);
+  const refetch = useCallback(async (options?: UseStatsOptions) => {
+    if (options?.showLoading) {
+      setLoading(true);
+    }
+
     const result = await getStats();
+
     if (result.ok) {
       setStats(result.data);
       setError(null);
     } else {
       setError(result.error);
     }
+
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    void refetch();
+    void refetch({ showLoading: true });
   }, [refetch]);
 
   return { stats, loading, error, refetch };

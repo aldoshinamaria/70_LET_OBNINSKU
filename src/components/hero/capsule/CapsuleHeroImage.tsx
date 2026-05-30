@@ -20,7 +20,6 @@ export function CapsuleHeroImage() {
         width={CAPSULE_IMG_WIDTH}
         height={CAPSULE_IMG_HEIGHT}
         loading="eager"
-        fetchPriority="high"
         decoding="async"
       />
     </picture>

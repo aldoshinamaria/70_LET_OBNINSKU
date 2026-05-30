@@ -1,4 +1,5 @@
-import { MESSAGES_TABLE, getSupabase, isSupabaseConfigured } from './supabase';
+import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
+import { MESSAGES_TABLE, getSupabase } from './supabase';
 import {
   localCreateMessage,
   localDeleteMessage,
@@ -60,23 +61,42 @@ export async function createMessage(
     return { ok: false, error: 'Данные формы не прошли проверку.' };
   }
 
-  const supabase = useLocal ? null : await getSupabase();
-  if (!supabase) {
+  if (!isSupabaseConfigured) {
     return { ok: true, data: localCreateMessage(payload) };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, error: 'Не удалось подключиться к Supabase.' };
   }
 
   try {
     const { data, error } = await supabase
       .from(MESSAGES_TABLE)
-      .insert(payload)
-      .select()
+      .insert({
+        name: payload.name,
+        category: payload.category,
+        location: payload.location,
+        wish_to_city: payload.wish_to_city,
+        future_city: payload.future_city,
+        message_to_2096: payload.message_to_2096,
+      })
+      .select('*')
       .single();
 
     if (error) {
       return { ok: false, error: error.message };
     }
 
-    return { ok: true, data: data as Message };
+    const row = data as Message;
+    return {
+      ok: true,
+      data: {
+        ...row,
+        status: 'pending',
+        featured: Boolean(row.featured),
+      },
+    };
   } catch {
     return { ok: false, error: NETWORK_ERROR };
   }
@@ -96,21 +116,24 @@ export async function getApprovedMessages(
       .from(MESSAGES_TABLE)
       .select('*')
       .eq('status', 'approved')
-      .eq('featured', true)
       .order('created_at', { ascending: false })
-      .limit(limit);
+      .limit(Math.max(limit * 5, 100));
 
     if (error) {
       return { ok: false, error: error.message };
     }
 
-    return { ok: true, data: (data ?? []) as Message[] };
+    const published = ((data ?? []) as Message[])
+      .filter((row) => row.featured === true)
+      .slice(0, limit);
+
+    return { ok: true, data: published };
   } catch {
     return { ok: false, error: NETWORK_ERROR };
   }
 }
 
-const EMPTY_STATS: ProjectStats = {
+export const EMPTY_STATS: ProjectStats = {
   participants: 0,
   messages: 0,
   pupils: 0,
@@ -121,6 +144,49 @@ const EMPTY_STATS: ProjectStats = {
   lastMessageName: null,
   lastMessageQuote: null,
 };
+
+type StatsRow = Pick<
+  Message,
+  | 'category'
+  | 'name'
+  | 'created_at'
+  | 'wish_to_city'
+  | 'future_city'
+  | 'message_to_2096'
+>;
+
+function aggregateStatsFromRows(rows: StatsRow[]): ProjectStats {
+  const stats: ProjectStats = { ...EMPTY_STATS };
+  stats.messages = rows.length;
+  stats.participants = rows.length;
+
+  if (rows.length > 0) {
+    stats.lastMessageAt = rows[0].created_at;
+    stats.lastMessageName = rows[0].name;
+    stats.lastMessageQuote = excerptFromMessage(rows[0]) || null;
+  }
+
+  for (const row of rows) {
+    switch (row.category) {
+      case 'школьник':
+        stats.pupils += 1;
+        break;
+      case 'педагог':
+        stats.teachers += 1;
+        break;
+      case 'выпускник':
+        stats.graduates += 1;
+        break;
+      case 'житель города':
+        stats.residents += 1;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return stats;
+}
 
 function excerptFromMessage(row: {
   wish_to_city?: string;
@@ -136,13 +202,16 @@ function excerptFromMessage(row: {
 }
 
 /**
- * Считает агрегированную статистику. Если БД не настроена или произошла
- * ошибка — возвращает нули, как требует ТЗ.
+ * Статистика «Город в цифрах» из таблицы messages (все послания, без демо-данных).
  */
 export async function getStats(): Promise<ServiceResult<ProjectStats>> {
-  const supabase = useLocal ? null : await getSupabase();
-  if (!supabase) {
+  if (!isSupabaseConfigured) {
     return { ok: true, data: localGetStats() };
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, error: 'Не удалось подключиться к Supabase.' };
   }
 
   try {
@@ -155,47 +224,7 @@ export async function getStats(): Promise<ServiceResult<ProjectStats>> {
       return { ok: false, error: error.message };
     }
 
-    const rows = (data ?? []) as Array<
-      Pick<
-        Message,
-        | 'category'
-        | 'name'
-        | 'created_at'
-        | 'wish_to_city'
-        | 'future_city'
-        | 'message_to_2096'
-      >
-    >;
-    const stats: ProjectStats = { ...EMPTY_STATS };
-    stats.participants = rows.length;
-    stats.messages = rows.length;
-
-    if (rows.length > 0) {
-      stats.lastMessageAt = rows[0].created_at;
-      stats.lastMessageName = rows[0].name;
-      stats.lastMessageQuote = excerptFromMessage(rows[0]) || null;
-    }
-
-    for (const row of rows) {
-      switch (row.category) {
-        case 'школьник':
-          stats.pupils += 1;
-          break;
-        case 'педагог':
-          stats.teachers += 1;
-          break;
-        case 'выпускник':
-          stats.graduates += 1;
-          break;
-        case 'житель города':
-          stats.residents += 1;
-          break;
-        default:
-          break;
-      }
-    }
-
-    return { ok: true, data: stats };
+    return { ok: true, data: aggregateStatsFromRows((data ?? []) as StatsRow[]) };
   } catch {
     return { ok: false, error: NETWORK_ERROR };
   }

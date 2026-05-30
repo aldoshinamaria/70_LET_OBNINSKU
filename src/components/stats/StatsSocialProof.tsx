@@ -16,6 +16,8 @@ import type { ProjectStats } from '@/types';
 
 interface StatsSocialProofProps {
   stats: ProjectStats;
+  loading?: boolean;
+  error?: string | null;
 }
 
 const ACTIVITY_TICK_MS = 30_000;
@@ -24,7 +26,11 @@ const ACTIVITY_TICK_MS = 30_000;
  * Блок социального доказательства: слева — счётчик и активность,
  * справа (на desktop) — последнее послание, категории и призыв.
  */
-export function StatsSocialProof({ stats }: StatsSocialProofProps) {
+export function StatsSocialProof({
+  stats,
+  loading = false,
+  error = null,
+}: StatsSocialProofProps) {
   const reduced = usePrefersReducedMotion();
   const total = useLiveCounter(stats.messages, !reduced);
   const [flash, setFlash] = useState(false);
@@ -73,13 +79,13 @@ export function StatsSocialProof({ stats }: StatsSocialProofProps) {
         className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/[0.07] blur-3xl lg:left-1/4"
       />
 
-      <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
+      <div className="relative flex min-w-0 flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
         {/* Левая колонка: счётчик, активность, кнопка */}
-        <div className="flex flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:pt-2">
+        <div className="flex min-w-0 flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:pt-2">
           <div className="relative flex flex-col items-center gap-2 lg:items-start">
             <span
               className={cn(
-                'font-display text-[4.5rem] font-semibold leading-none tabular-nums tracking-tight text-primary sm:text-[6.5rem] lg:text-[7rem] xl:text-[7.5rem]',
+                'font-display text-[3.25rem] font-semibold leading-none tabular-nums tracking-tight text-primary min-[400px]:text-[4.5rem] sm:text-[6.5rem] lg:text-[7rem] xl:text-[7.5rem]',
                 flash && !reduced && 'stats-count-flash',
               )}
               aria-live="polite"
@@ -94,7 +100,13 @@ export function StatsSocialProof({ stats }: StatsSocialProofProps) {
             </p>
           </div>
 
-          {activity && (
+          {error && (
+            <p className="mt-6 text-sm text-danger" role="alert">
+              {error}
+            </p>
+          )}
+
+          {activity && !loading && !error && (
             <p className="mt-8 flex items-center justify-center gap-2.5 text-sm text-secondary lg:justify-start">
               <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/30" />
@@ -114,13 +126,22 @@ export function StatsSocialProof({ stats }: StatsSocialProofProps) {
         </div>
 
         {/* Правая колонка: последний голос, категории, призыв */}
-        <div className="flex w-full flex-col lg:max-w-[26rem] lg:flex-1 lg:pt-2 xl:max-w-[28rem]">
+        <div className="flex w-full min-w-0 flex-col lg:max-w-[26rem] lg:flex-1 lg:pt-2 xl:max-w-[28rem]">
           <p className="mb-5 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-secondary lg:text-left">
             Последний голос в капсуле
           </p>
 
           <AnimatePresence mode="wait">
-            {hasLast ? (
+            {loading ? (
+              <motion.p
+                key="loading-last"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center text-sm text-secondary animate-pulse lg:text-left"
+              >
+                Загрузка последнего послания…
+              </motion.p>
+            ) : hasLast ? (
               <motion.figure
                 key={`${stats.lastMessageAt}-${stats.lastMessageQuote}`}
                 initial={reduced ? false : { opacity: 0, y: 10 }}
@@ -157,7 +178,7 @@ export function StatsSocialProof({ stats }: StatsSocialProofProps) {
             )}
           </AnimatePresence>
 
-          {visibleChips.length > 0 && (
+          {visibleChips.length > 0 && !loading && (
             <ul className="mt-8 flex flex-col items-center gap-2 text-sm text-secondary lg:items-start">
               {visibleChips.map((chip) => (
                 <li key={chip.key} className="tabular-nums">

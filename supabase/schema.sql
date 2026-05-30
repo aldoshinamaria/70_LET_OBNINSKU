@@ -92,6 +92,17 @@ create policy "public can read featured"
   to anon, authenticated
   using (status = 'approved' and featured = true);
 
+-- Ответ insert().select() после отправки формы (статус pending задаёт триггер).
+drop policy if exists "public read recent submit" on public.messages;
+create policy "public read recent submit"
+  on public.messages
+  for select
+  to anon, authenticated
+  using (
+    status = 'pending'
+    and created_at >= (timezone('utc', now()) - interval '10 minutes')
+  );
+
 -- =====================================================================
 --  АДМИН-ДОСТУП
 -- =====================================================================

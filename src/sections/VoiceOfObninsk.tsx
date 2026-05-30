@@ -12,20 +12,28 @@ interface VoiceOfObninskProps {
 export function VoiceOfObninsk({ messages, loading }: VoiceOfObninskProps) {
   return (
     <section id={SECTION_IDS.voice} className="section-spacing relative">
-      <div className="mx-auto max-w-content section-padding">
+      <div className="mx-auto min-w-0 max-w-content section-padding">
         <SectionHeading
           eyebrow="Голос Обнинска"
           title="Что говорят жители"
-          description="Лучшие пожелания, отобранные командой проекта. Только они появляются на странице для всех жителей."
+          description={
+            <span className="flex flex-col items-center gap-2">
+              <span>Лучшие пожелания, отобранные командой проекта.</span>
+              <span className="max-w-full xl:whitespace-nowrap xl:text-lg">
+                Только они появляются на странице для всех жителей.
+              </span>
+            </span>
+          }
+          descriptionClassName="lg:max-w-none"
         />
 
-        <div className="mt-10 sm:mt-12 lg:mt-8">
+        <div className="mt-10 min-w-0 sm:mt-12 lg:mt-8">
           {loading ? (
             <div className="flex gap-4 overflow-hidden px-12 sm:px-14">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-[220px] w-[300px] shrink-0 animate-pulse rounded-2xl border border-border bg-surface/40"
+                  className="h-[220px] w-[min(280px,calc(100vw-5rem))] shrink-0 animate-pulse rounded-lg bg-primary/5 sm:w-[300px]"
                 />
               ))}
             </div>

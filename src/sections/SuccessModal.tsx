@@ -18,6 +18,7 @@ import { scrollToSection } from '@/utils/scroll';
 import {
   CAPSULE_OPEN_DATE,
   CAPSULE_OPEN_DATE_LABEL,
+  FORM_SUBMIT_SUCCESS_MESSAGE,
   HISTORY_NOTE,
   SECTION_IDS,
 } from '@/utils/constants';
@@ -28,7 +29,7 @@ interface SuccessModalProps {
   onClose: () => void;
 }
 
-const PREVIEW_WIDTH = 248;
+const PREVIEW_WIDTH = 340;
 const PREVIEW_SCALE = PREVIEW_WIDTH / POSTCARD_WIDTH;
 
 const container = {
@@ -123,7 +124,7 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="font-display text-2xl font-semibold leading-tight text-balance sm:text-3xl">
-                Послание сохранено в цифровой капсуле времени
+                {FORM_SUBMIT_SUCCESS_MESSAGE}
               </h3>
               <p className="text-sm text-secondary sm:text-base">
                 Ваш голос станет частью истории Обнинска.
@@ -137,14 +138,14 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
             className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/[0.08] to-transparent p-6 sm:p-8"
           >
             <div className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-            <p className="text-xs uppercase tracking-[0.2em] text-primary/80">
+            <p className="text-center text-xs uppercase tracking-[0.2em] text-primary/80">
               {primaryMessageLabel(message)}
             </p>
-            <p className="relative mt-3 font-display text-xl font-medium leading-relaxed text-text text-balance sm:text-2xl">
-              <span className="mr-1 font-display text-3xl text-primary/50">«</span>
+            <blockquote className="relative mt-3 text-center font-display text-xl font-medium leading-relaxed text-text sm:text-2xl">
+              <span className="font-display text-3xl text-primary/50">«</span>
               {primaryMessageText(message)}
-              <span className="ml-1 font-display text-3xl text-primary/50">»</span>
-            </p>
+              <span className="font-display text-3xl text-primary/50">»</span>
+            </blockquote>
           </motion.div>
 
           {/* Блок 3 — автор (вторичный уровень) */}
@@ -163,21 +164,23 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
           </motion.div>
 
           {/* Блок 4 — таймер открытия */}
-          <motion.div variants={item} className="flex flex-col gap-3">
-            <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.18em] text-secondary">
-              <Clock3 className="h-4 w-4 text-primary" />
+          <motion.div variants={item} className="flex flex-col gap-2">
+            <div className="flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-secondary sm:text-[11px]">
+              <Clock3 className="h-3.5 w-3.5 shrink-0 text-primary" />
               До открытия капсулы · {CAPSULE_OPEN_DATE_LABEL}
             </div>
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="mx-auto grid w-full max-w-[220px] grid-cols-4 gap-1 sm:max-w-[240px]">
               {countdownCells.map((cell, index) => (
                 <div
                   key={index}
-                  className="glass-card flex flex-col items-center gap-1 rounded-2xl py-4"
+                  className="glass-card flex min-w-0 flex-col items-center justify-center gap-0 rounded-lg border-primary/12 px-0.5 py-1.5"
                 >
-                  <span className="font-display text-2xl font-semibold tabular-nums text-primary sm:text-3xl">
+                  <span className="font-display text-base font-semibold tabular-nums leading-none text-primary">
                     {cell.value}
                   </span>
-                  <span className="text-[11px] text-secondary">{cell.label}</span>
+                  <span className="text-[8px] leading-tight text-secondary">
+                    {cell.label}
+                  </span>
                 </div>
               ))}
             </div>
@@ -188,71 +191,58 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
             variants={item}
             className="border-l-2 border-primary/40 pl-4 text-sm italic leading-relaxed text-secondary"
           >
-            {HISTORY_NOTE}
+            {HISTORY_NOTE[0]}
+            <br />
+            {HISTORY_NOTE[1]}
           </motion.p>
 
-          {/* Блок 6 — распространение */}
-          <motion.div variants={item} className="flex flex-col gap-5">
-            <div className="flex items-center gap-4">
-              {/* Превью открытки */}
+          {/* Блок 6 — открытка и шеринг */}
+          <motion.div variants={item} className="flex flex-col items-center gap-4">
+            <div
+              className="shrink-0 overflow-hidden rounded-xl border border-border shadow-card"
+              style={{
+                width: PREVIEW_WIDTH,
+                height: POSTCARD_HEIGHT * PREVIEW_SCALE,
+              }}
+            >
               <div
-                className="shrink-0 overflow-hidden rounded-xl border border-border shadow-card"
                 style={{
-                  width: PREVIEW_WIDTH,
-                  height: POSTCARD_HEIGHT * PREVIEW_SCALE,
+                  width: POSTCARD_WIDTH,
+                  height: POSTCARD_HEIGHT,
+                  transform: `scale(${PREVIEW_SCALE})`,
+                  transformOrigin: 'top left',
                 }}
               >
-                <div
-                  style={{
-                    width: POSTCARD_WIDTH,
-                    height: POSTCARD_HEIGHT,
-                    transform: `scale(${PREVIEW_SCALE})`,
-                    transformOrigin: 'top left',
-                  }}
-                >
-                  <Postcard ref={postcardRef} message={message} />
-                </div>
-              </div>
-
-              <div className="flex flex-1 flex-col gap-2">
-                <p className="text-sm font-medium text-text">
-                  Поделитесь письмом в будущее
-                </p>
-                <p className="text-xs leading-relaxed text-secondary">
-                  Покажите друзьям, что вы стали частью истории города. Каждая
-                  открытка приглашает новых жителей.
-                </p>
+                <Postcard ref={postcardRef} message={message} />
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-secondary">
-                Поделиться проектом
-              </p>
-              <ShareButtons onNotify={setToast} />
-            </div>
+            <p className="text-center text-sm font-medium text-text">
+              Поделитесь письмом в будущее
+            </p>
+            <ShareButtons className="justify-center" />
 
-            <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row">
+            <div className="flex w-full flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
               <Button
-                fullWidth
-                size="lg"
+                size="sm"
+                className="sm:min-w-[200px]"
                 onClick={handleDownload}
                 disabled={downloading}
               >
                 {downloading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Download className="h-5 w-5" />
+                  <Download className="h-4 w-4" />
                 )}
                 Скачать открытку
               </Button>
               <Button
-                fullWidth
-                size="lg"
+                size="sm"
                 variant="secondary"
+                className="sm:min-w-[200px]"
                 onClick={handleWriteNew}
               >
-                <PenLine className="h-5 w-5" />
+                <PenLine className="h-4 w-4" />
                 Написать новое
               </Button>
             </div>
