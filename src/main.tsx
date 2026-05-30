@@ -12,7 +12,9 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter
+      basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}
+    >
       <App />
     </BrowserRouter>
   </React.StrictMode>,
