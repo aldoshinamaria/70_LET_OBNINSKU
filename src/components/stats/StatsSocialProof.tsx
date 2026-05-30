@@ -66,14 +66,14 @@ export function StatsSocialProof({ stats }: StatsSocialProofProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mt-14 sm:mt-20"
+      className="relative mt-14 sm:mt-20 lg:mt-10"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/[0.07] blur-3xl lg:left-1/4"
       />
 
-      <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-14 xl:gap-20">
+      <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
         {/* Левая колонка: счётчик, активность, кнопка */}
         <div className="flex flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:pt-2">
           <div className="relative flex flex-col items-center gap-2 lg:items-start">

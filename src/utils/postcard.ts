@@ -22,11 +22,21 @@ function waitForImages(node: HTMLElement): Promise<void> {
 }
 
 /** Генерирует PNG-открытку из DOM-узла и инициирует скачивание. */
+async function waitForFonts(): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts?.ready) return;
+  try {
+    await document.fonts.ready;
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function downloadPostcard(
   node: HTMLElement,
   fileName: string,
 ): Promise<void> {
   await waitForImages(node);
+  await waitForFonts();
 
   const dataUrl = await toPng(node, {
     width: POSTCARD_WIDTH,

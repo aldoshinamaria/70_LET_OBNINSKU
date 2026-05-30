@@ -31,6 +31,19 @@ export function postcardMessageText(message: Message): string {
   return '';
 }
 
+/** Текст для витрины капсулы и блока «Лучшие пожелания» (как на орбите). */
+export function wishDisplayText(message: Message): string {
+  const candidates = [
+    message.wish_to_city,
+    message.future_city,
+    message.message_to_2096,
+  ];
+  for (const text of candidates) {
+    if (text && text.trim()) return text.trim();
+  }
+  return '';
+}
+
 /** Подпись-источник для главного текста (что именно показываем). */
 export function primaryMessageLabel(message: Message): string {
   if (message.message_to_2096 && message.message_to_2096.trim()) {

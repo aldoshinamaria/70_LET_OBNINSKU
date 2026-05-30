@@ -1,31 +1,48 @@
-import { Quote } from 'lucide-react';
-import { formatDate, formatMessageNumber } from '@/utils/format';
+import { CapsuleWishText } from '@/components/CapsuleWishText';
+import { formatMessageNumber } from '@/utils/format';
+import { wishDisplayText } from '@/utils/message';
 import type { Message } from '@/types';
 
 interface MessageCardProps {
   message: Message;
+  /** Компактная карточка для горизонтальной ленты. */
+  compact?: boolean;
 }
 
-export function MessageCard({ message }: MessageCardProps) {
-  const text = message.wish_to_city || message.future_city;
+export function MessageCard({ message, compact = false }: MessageCardProps) {
+  const text = wishDisplayText(message);
+
   return (
-    <article className="glass-card flex h-full flex-col gap-5 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40">
-      <div className="flex items-start justify-between gap-4">
-        <Quote className="h-7 w-7 shrink-0 text-primary/50" />
-        <span className="rounded-full border border-primary/20 px-3 py-1 text-xs font-medium tabular-nums text-primary">
+    <article
+      className={
+        compact
+          ? 'glass-card flex h-[220px] flex-col items-center justify-between rounded-2xl border-primary/20 px-5 py-6 text-center transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_28px_rgba(217,179,108,0.12)]'
+          : 'glass-card flex h-full flex-col items-center justify-between gap-6 rounded-2xl border-primary/20 px-6 py-8 text-center transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_36px_rgba(217,179,108,0.14)] sm:px-7 sm:py-9'
+      }
+    >
+      <CapsuleWishText
+        text={text}
+        name={message.name}
+        quoteClassName={
+          compact
+            ? 'line-clamp-3 text-sm leading-snug [text-shadow:0_0_20px_rgba(217,179,108,0.18)]'
+            : 'text-base leading-relaxed sm:text-lg [text-shadow:0_0_24px_rgba(217,179,108,0.2)]'
+        }
+        signatureClassName={compact ? 'mt-2 text-lg sm:text-xl' : 'mt-3'}
+      />
+
+      <div
+        className={
+          compact
+            ? 'flex w-full flex-col items-center gap-0.5 border-t border-primary/10 pt-3'
+            : 'flex w-full flex-col items-center gap-1 border-t border-primary/10 pt-4'
+        }
+      >
+        <p className="text-[11px] capitalize tracking-wide text-primary/45">
+          {message.category}
+        </p>
+        <span className="text-[10px] font-medium tabular-nums tracking-wider text-primary/35">
           № {formatMessageNumber(message.message_number)}
-        </span>
-      </div>
-
-      <p className="flex-1 text-base leading-relaxed text-text/90">{text}</p>
-
-      <div className="flex items-end justify-between gap-3 border-t border-border pt-4">
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{message.name}</p>
-          <p className="text-xs capitalize text-secondary">{message.category}</p>
-        </div>
-        <span className="shrink-0 text-xs text-secondary/70">
-          {formatDate(message.created_at)}
         </span>
       </div>
     </article>

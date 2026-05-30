@@ -27,7 +27,7 @@ export function CapsuleVolume({ animate }: CapsuleVolumeProps) {
               : undefined
           }
         >
-          <div className="relative flex h-[min(480px,78vh)] w-[min(360px,88vw)] items-center justify-center">
+          <div className="relative flex h-[min(560px,84vh)] w-[min(420px,92vw)] items-center justify-center">
             <CapsuleInnerGlow />
             <CapsuleHeroImage />
             {animate && <CapsuleGleam />}

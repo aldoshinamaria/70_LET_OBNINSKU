@@ -24,7 +24,7 @@ export function ProjectLogo({ variant = 'mark', className }: ProjectLogoProps) {
     <span
       className={cn(
         'relative inline-flex shrink-0 items-center justify-center',
-        variant === 'mark' ? 'h-11 w-11 sm:h-12 sm:w-12' : 'h-24 w-auto sm:h-28',
+        variant === 'mark' ? 'h-11 w-11 sm:h-12 sm:w-12' : 'h-14 w-auto sm:h-16',
         className,
       )}
     >
@@ -39,10 +39,10 @@ export function ProjectLogo({ variant = 'mark', className }: ProjectLogoProps) {
           alt="Обнинск — 70 лет. Первый наукоград России"
           className={cn(
             'relative h-full w-full object-contain drop-shadow-[0_2px_12px_rgba(217,179,108,0.2)]',
-            variant === 'full' && 'max-w-[220px] sm:max-w-[260px]',
+            variant === 'full' && 'max-w-[132px] sm:max-w-[152px]',
           )}
-          width={variant === 'full' ? 260 : 120}
-          height={variant === 'full' ? 120 : 48}
+          width={variant === 'full' ? 152 : 120}
+          height={variant === 'full' ? 72 : 48}
           decoding="async"
         />
       </picture>

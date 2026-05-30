@@ -81,15 +81,18 @@ export function MessageForm({ onSubmitted }: MessageFormProps) {
   const handleModalClose = () => setSavedMessage(null);
 
   return (
-    <section id={SECTION_IDS.form} className="relative py-20 sm:py-28">
-      <div className="mx-auto max-w-3xl section-padding">
+    <section id={SECTION_IDS.form} className="section-spacing relative">
+      <div className="mx-auto max-w-content section-padding">
         <SectionHeading
           eyebrow="Ваше послание"
           title="Оставьте свой след в истории"
           description="Заполните форму — и ваши слова навсегда останутся в цифровой капсуле времени Обнинска."
+          descriptionClassName="mx-auto text-center lg:block lg:w-max lg:max-w-none lg:whitespace-nowrap lg:text-[1.0625rem] xl:text-lg"
         />
+      </div>
 
-        <Reveal className="mt-12" delay={0.1}>
+      <div className="mx-auto max-w-3xl section-padding">
+        <Reveal className="mt-12 lg:mt-8" delay={0.1}>
           <form
             onSubmit={handleSubmit}
             noValidate

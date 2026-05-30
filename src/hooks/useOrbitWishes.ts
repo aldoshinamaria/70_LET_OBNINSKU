@@ -7,10 +7,10 @@ export const MAX_ORBIT_ITEMS = 5;
 export const ORBIT_WISH_TEXT_MAX = 42;
 
 /** Радиус орбиты (px) — послания дальше от капсулы, центр кольца = центр капсулы. */
-export const ORBIT_RADIUS_PX = 218;
+export const ORBIT_RADIUS_PX = 262;
 
 /** Размер бокса кольца (диаметр орбиты + запас под текст). */
-export const ORBIT_RING_BOX_PX = ORBIT_RADIUS_PX * 2 + 150;
+export const ORBIT_RING_BOX_PX = ORBIT_RADIUS_PX * 2 + 170;
 
 /**
  * Наклон плоскости орбиты (rotateX).

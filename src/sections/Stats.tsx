@@ -9,7 +9,7 @@ interface StatsProps {
 
 export function Stats({ stats }: StatsProps) {
   return (
-    <section id={SECTION_IDS.stats} className="relative py-20 sm:py-28">
+    <section id={SECTION_IDS.stats} className="section-spacing relative">
       <div className="mx-auto max-w-content section-padding">
         <SectionHeading
           eyebrow="Капсула наполняется"

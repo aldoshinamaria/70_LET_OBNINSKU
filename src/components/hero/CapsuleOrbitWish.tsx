@@ -50,7 +50,7 @@ export function CapsuleOrbitWish({
         zIndex: Math.round(10 + prominence * 20),
       }}
     >
-      <figure
+      <div
         className="w-[min(188px,36vw)] max-w-none origin-center sm:w-[208px]"
         style={{
           transform: positionTransform,
@@ -61,7 +61,7 @@ export function CapsuleOrbitWish({
       >
         <blockquote
           className={cn(
-            'line-clamp-2 text-center font-display text-[13px] italic leading-snug tracking-normal sm:text-[14px]',
+            'capsule-wish-quote line-clamp-2 text-center text-[13px] sm:text-[14px]',
             atBottom
               ? 'text-primary'
               : prominence > 0.45
@@ -73,13 +73,13 @@ export function CapsuleOrbitWish({
         </blockquote>
         <figcaption
           className={cn(
-            'mt-1 truncate text-center font-display text-[11px] tracking-normal sm:text-[12px]',
+            'capsule-wish-signature mt-1 truncate text-center text-lg sm:text-xl',
             atBottom ? 'text-primary-soft' : 'text-primary/50',
           )}
         >
           — {voice.name}
         </figcaption>
-      </figure>
+      </div>
     </div>
   );
 }

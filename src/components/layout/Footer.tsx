@@ -7,9 +7,9 @@ export function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="relative border-t border-border bg-background/60">
-      <div className="mx-auto max-w-content px-5 py-12 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-content px-5 py-12 sm:px-8 lg:px-12 lg:py-8">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
             <ProjectLogo variant="full" />
             <div className="text-center sm:text-left">
               <p className="text-sm font-semibold">{PROJECT_NAME}</p>

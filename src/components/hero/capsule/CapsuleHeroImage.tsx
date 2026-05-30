@@ -6,7 +6,7 @@ import {
   CAPSULE_IMG_WIDTH,
 } from './capsuleConstants';
 
-const imgClass = `${CAPSULE_HEIGHT_CLASS} w-auto max-w-[min(360px,88vw)] object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.55)]`;
+const imgClass = `${CAPSULE_HEIGHT_CLASS} w-auto max-w-[min(420px,92vw)] object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.55)]`;
 
 /** Одно изображение капсулы — без второй «задней» плоскости. */
 export function CapsuleHeroImage() {

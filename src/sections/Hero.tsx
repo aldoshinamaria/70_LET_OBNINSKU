@@ -14,18 +14,18 @@ export function Hero({ voices }: HeroProps) {
   return (
     <section
       id={SECTION_IDS.hero}
-      className="relative flex min-h-screen items-center pt-28 pb-16 sm:pt-32"
+      className="relative flex min-h-screen items-center pt-28 pb-16 sm:pt-32 lg:min-h-0 lg:py-20 xl:py-24"
     >
-      <div className="mx-auto grid w-full max-w-content items-center gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 xl:gap-10 lg:px-12">
+      <div className="mx-auto grid w-full max-w-content items-center gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)] lg:gap-8 xl:gap-10 lg:px-12">
         {/* Левая колонка */}
-        <div className="flex flex-col gap-7">
+        <div className="flex flex-col gap-5 lg:gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-medium tracking-wide text-primary sm:text-sm"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-[11px] font-medium tracking-wide text-primary sm:text-xs"
           >
-            <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+            <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span>
               70 лет истории • тысячи судеб • одно будущее
             </span>
@@ -35,7 +35,7 @@ export function Hero({ voices }: HeroProps) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.05 }}
-            className="font-display text-[2.35rem] font-bold leading-[1.02] tracking-tight text-balance sm:text-5xl lg:text-[3.35rem] lg:leading-[1.04]"
+            className="font-display text-[1.85rem] font-bold leading-[1.05] tracking-tight text-balance sm:text-4xl lg:text-[2.5rem] lg:leading-[1.08] xl:text-[2.65rem]"
           >
             Письмо в{' '}
             <span className="gold-gradient-text">Обнинск 2096</span> года
@@ -45,7 +45,7 @@ export function Hero({ voices }: HeroProps) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.12 }}
-            className="max-w-[34rem] text-lg font-medium leading-snug text-primary sm:text-xl lg:text-[1.35rem] lg:leading-relaxed"
+            className="text-base font-medium leading-snug text-primary sm:text-lg lg:text-[1.05rem] lg:leading-relaxed"
           >
             Ваши слова станут частью цифровой капсулы времени и будут сохранены
             для будущих поколений жителей наукограда.
@@ -55,7 +55,7 @@ export function Hero({ voices }: HeroProps) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.18 }}
-            className="flex max-w-[36rem] flex-col gap-4 text-base leading-relaxed text-secondary sm:text-[1.0625rem] sm:leading-[1.65]"
+            className="flex flex-col gap-3 text-sm leading-relaxed text-secondary sm:text-[0.9375rem] sm:leading-[1.6] lg:text-sm"
           >
             <p className="text-text/90">
               Сегодня мы можем заглянуть на 70 лет вперёд.
@@ -78,9 +78,9 @@ export function Hero({ voices }: HeroProps) {
             className="flex flex-wrap items-center gap-4 pt-2"
           >
             <Button
-              size="lg"
+              size="md"
               onClick={() => scrollToSection(SECTION_IDS.form)}
-              className="group"
+              className="group lg:text-sm"
             >
               Оставить послание
               <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
@@ -88,7 +88,7 @@ export function Hero({ voices }: HeroProps) {
             <button
               type="button"
               onClick={() => scrollToSection(SECTION_IDS.about)}
-              className="text-sm font-medium text-secondary underline-offset-4 transition-colors hover:text-text hover:underline"
+              className="text-xs font-medium text-secondary underline-offset-4 transition-colors hover:text-text hover:underline sm:text-sm"
             >
               Как это работает
             </button>

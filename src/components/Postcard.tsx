@@ -8,6 +8,11 @@ import {
 } from '@/utils/format';
 import { postcardMessageText } from '@/utils/message';
 import { POSTCARD_LAYOUT } from '@/utils/postcardLayout';
+import {
+  fitWishTypography,
+  POSTCARD_WISH_BOX,
+  POSTCARD_WISH_LINE_HEIGHT,
+} from '@/utils/postcardWishText';
 import type { Message } from '@/types';
 
 export const POSTCARD_WIDTH = 1080;
@@ -15,16 +20,6 @@ export const POSTCARD_HEIGHT = 1350;
 
 interface PostcardProps {
   message: Message;
-}
-
-/** Размер шрифта пожелания на пергаменте в зависимости от длины. */
-function wishFontSize(length: number): number {
-  if (length > 320) return 26;
-  if (length > 240) return 30;
-  if (length > 160) return 34;
-  if (length > 100) return 38;
-  if (length > 60) return 42;
-  return 46;
 }
 
 const fieldTextStyle: CSSProperties = {
@@ -37,15 +32,17 @@ const fieldTextStyle: CSSProperties = {
   textShadow: '0 1px 4px rgba(0,0,0,0.65)',
 };
 
+const wishFontFamily =
+  '"Cormorant Garamond", Georgia, "Times New Roman", serif';
+
 /**
  * Открытка 1080×1350 на основе шаблона «Шаблон открытки.png».
- * Динамические поля: пожелание на пергаменте, имя, дата, номер, дата открытия.
- * Все стили инлайн — для корректного экспорта через html-to-image.
+ * Пожелание на пергаменте — перенос только по словам, без «съезда» при экспорте.
  */
 export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
   ({ message }, ref) => {
     const wish = truncate(postcardMessageText(message), 380);
-    const wishSize = wishFontSize(wish.length);
+    const { fontSize, lines } = fitWishTypography(wish);
     const number = formatMessageNumber(message.message_number);
 
     return (
@@ -80,32 +77,49 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
         <div
           style={{
             position: 'absolute',
-            left: POSTCARD_LAYOUT.message.left,
-            top: POSTCARD_LAYOUT.message.top,
-            width: POSTCARD_LAYOUT.message.width,
-            height: POSTCARD_LAYOUT.message.height,
+            left: POSTCARD_WISH_BOX.left,
+            top: POSTCARD_WISH_BOX.top,
+            width: POSTCARD_WISH_BOX.width,
+            height: POSTCARD_WISH_BOX.height,
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '8px 12px',
+            padding: `${POSTCARD_WISH_BOX.paddingY}px ${POSTCARD_WISH_BOX.paddingX}px`,
             boxSizing: 'border-box',
           }}
         >
-          <p
+          <div
             style={{
-              margin: 0,
-              fontFamily: '"Cormorant Garamond", Georgia, "Times New Roman", serif',
-              fontStyle: 'italic',
-              fontWeight: 600,
-              fontSize: wishSize,
-              lineHeight: 1.35,
-              textAlign: 'center',
-              color: '#2A1F0E',
-              textShadow: '0 0 1px rgba(255,255,255,0.35)',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0,
             }}
           >
-            {wish}
-          </p>
+            {lines.map((line, index) => (
+              <span
+                key={`${index}-${line}`}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  fontFamily: wishFontFamily,
+                  fontStyle: 'italic',
+                  fontWeight: 600,
+                  fontSize,
+                  lineHeight: POSTCARD_WISH_LINE_HEIGHT,
+                  textAlign: 'center',
+                  color: '#2A1F0E',
+                  whiteSpace: 'nowrap',
+                  textShadow: '0 0 1px rgba(255,255,255,0.35)',
+                }}
+              >
+                {line}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Номер на крышке капсулы */}

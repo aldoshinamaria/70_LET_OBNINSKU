@@ -70,6 +70,21 @@
   .section-padding {
     @apply px-5 sm:px-8 lg:px-12;
   }
+
+  /** Вертикальные отступы секций: компактнее на desktop. */
+  .section-spacing {
+    @apply py-16 sm:py-20 lg:py-12 xl:py-14;
+  }
+
+  .capsule-wish-quote {
+    @apply font-display text-primary leading-snug tracking-normal;
+    font-style: italic;
+  }
+
+  .capsule-wish-signature {
+    @apply mt-2 text-xl leading-none text-primary-soft sm:text-2xl;
+    font-family: Caveat, 'Segoe Script', cursive;
+  }
 }
 
 @layer utilities {

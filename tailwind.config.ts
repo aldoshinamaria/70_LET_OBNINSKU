@@ -22,6 +22,7 @@ const config: Config = {
       fontFamily: {
         sans: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
         display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        hand: ['Caveat', 'Segoe Script', 'cursive'],
       },
       maxWidth: {
         content: '1240px',
