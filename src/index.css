@@ -79,12 +79,12 @@
   }
 
   .capsule-wish-quote {
-    @apply font-display text-primary leading-snug tracking-normal;
+    @apply font-display text-primary tracking-normal;
     font-style: italic;
   }
 
   .capsule-wish-signature {
-    @apply mt-2 text-xl leading-none text-primary-soft sm:text-2xl;
+    @apply leading-none text-primary-soft;
     font-family: Caveat, 'Segoe Script', cursive;
   }
 }

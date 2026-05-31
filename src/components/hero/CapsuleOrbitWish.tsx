@@ -51,7 +51,7 @@ export function CapsuleOrbitWish({
       }}
     >
       <div
-        className="w-[min(168px,44vw)] max-w-none origin-center sm:w-[208px]"
+        className="w-[min(132px,34vw)] max-w-none origin-center sm:w-[208px]"
         style={{
           transform: positionTransform,
           opacity,
@@ -61,7 +61,7 @@ export function CapsuleOrbitWish({
       >
         <blockquote
           className={cn(
-            'capsule-wish-quote line-clamp-2 text-center text-[13px] sm:text-[14px]',
+            'capsule-wish-quote line-clamp-2 text-center text-[10px] leading-tight sm:text-[14px] sm:leading-snug',
             atBottom
               ? 'text-primary'
               : prominence > 0.45
@@ -73,7 +73,7 @@ export function CapsuleOrbitWish({
         </blockquote>
         <figcaption
           className={cn(
-            'capsule-wish-signature mt-1 truncate text-center text-lg sm:text-xl',
+            'capsule-wish-signature mt-0.5 truncate text-center text-xs sm:mt-1 sm:text-xl',
             atBottom ? 'text-primary-soft' : 'text-primary/50',
           )}
         >

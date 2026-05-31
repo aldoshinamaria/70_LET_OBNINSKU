@@ -15,8 +15,20 @@ export const ORBIT_RING_BOX_PX = ORBIT_RADIUS_PX * 2 + 170;
 /** Запас снизу/сверху под цитату (особенно подсвеченное послание внизу). */
 export const ORBIT_TEXT_RESERVE_PX = 100;
 
+/** Порог «узкого» бокса — телефоны и узкие колонки hero. */
+export const ORBIT_COMPACT_BOX_PX = 520;
+
 /** Радиус орбиты под фактический размер бокса (мобильные не обрезают текст). */
 export function computeOrbitRadius(boxPx: number): number {
+  const compact = boxPx < ORBIT_COMPACT_BOX_PX;
+
+  if (compact) {
+    // Доля от бокса: послания дальше от крупной капсулы на узком экране
+    return Math.round(
+      Math.min(ORBIT_RADIUS_PX, Math.max(128, boxPx * 0.44)),
+    );
+  }
+
   const maxByBox = boxPx / 2 - ORBIT_TEXT_RESERVE_PX;
   return Math.round(Math.min(ORBIT_RADIUS_PX, Math.max(104, maxByBox)));
 }
