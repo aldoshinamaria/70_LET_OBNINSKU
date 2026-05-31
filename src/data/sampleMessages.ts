@@ -1,3 +1,4 @@
+import { MAX_ORBIT_ITEMS } from '@/hooks/useOrbitWishes';
 import type { Message } from '@/types';
 
 /**
@@ -75,4 +76,28 @@ export function voicesFromMessages(messages: readonly Message[]): CapsuleVoice[]
     category: message.category,
     text: message.wish_to_city || message.future_city,
   }));
+}
+
+/**
+ * Голоса для орбиты в hero: сначала одобренные из БД, затем демо до {@link MAX_ORBIT_ITEMS}.
+ * Без одобренных — `undefined`, и CapsuleStage подставит `sampleMessages` (5 слотов).
+ */
+export function buildHeroOrbitVoices(
+  messages: readonly Message[],
+): CapsuleVoice[] | undefined {
+  const fromDb = voicesFromMessages(messages);
+  if (fromDb.length === 0) return undefined;
+
+  const merged: CapsuleVoice[] = [...fromDb];
+  const seen = new Set(merged.map((v) => v.id));
+
+  for (const sample of sampleMessages) {
+    if (merged.length >= MAX_ORBIT_ITEMS) break;
+    if (!seen.has(sample.id)) {
+      merged.push(sample);
+      seen.add(sample.id);
+    }
+  }
+
+  return merged.slice(0, MAX_ORBIT_ITEMS);
 }

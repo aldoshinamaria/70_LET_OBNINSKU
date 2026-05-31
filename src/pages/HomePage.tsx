@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { voicesFromMessages } from '@/data/sampleMessages';
+import { buildHeroOrbitVoices } from '@/data/sampleMessages';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/sections/Hero';
@@ -24,10 +24,7 @@ export function HomePage() {
     void refetchMessages();
   }, [refetchStats, refetchMessages]);
 
-  const heroVoices = useMemo(
-    () => (messages.length > 0 ? voicesFromMessages(messages) : undefined),
-    [messages],
-  );
+  const heroVoices = useMemo(() => buildHeroOrbitVoices(messages), [messages]);
 
   return (
     <>
