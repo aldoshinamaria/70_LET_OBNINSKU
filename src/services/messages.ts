@@ -137,7 +137,9 @@ export async function createMessage(
         };
       }
 
-      row = (fallback ?? undefined) as Message | undefined;
+      if (fallback != null) {
+        row = fallback;
+      }
     }
 
     if (!row?.id) {
