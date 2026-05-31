@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { FeaturedBadge, StatusBadge } from '@/components/StatusBadge';
 import { useAdminMessages } from '@/hooks/useAdminMessages';
-import { DEMO_MODE } from '@/services/config';
+import { DEMO_MODE, SUPABASE_SETUP_STEPS } from '@/services/config';
 import { formatDate, formatMessageNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
 import type { Message, MessageStatus } from '@/types';
@@ -109,11 +109,29 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       </header>
 
       <div className="mx-auto max-w-content px-5 py-8 sm:px-8">
-        <p className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
-          {DEMO_MODE
-            ? 'Демо-режим: послания в этом браузере. Решения модерации сохраняются локально.'
-            : 'Решения «одобрить / на сайт / отклонить» сохраняются в этом браузере и сразу видны в админке и на сайте. Для общей базы настройте Supabase (supabase/schema.sql).'}
-        </p>
+        {DEMO_MODE ? (
+          <div className="mb-4 rounded-xl border border-danger/50 bg-danger/10 px-4 py-4 text-sm text-text">
+            <p className="font-semibold text-danger">
+              Общая база не подключена — послания гостей не попадают в эту админку
+            </p>
+            <p className="mt-2 text-secondary">
+              Сейчас сайт obninsk70.ru собран без ключей Supabase.
+              Каждый посетитель сохраняет послание только в своём браузере; счётчик и список
+              здесь — только из вашего браузера (и демо-записей).
+            </p>
+            <ol className="mt-3 list-decimal space-y-1 pl-5 text-secondary">
+              {SUPABASE_SETUP_STEPS.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <p className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
+            Послания загружаются из Supabase. Кнопки «Одобрить» и «На сайт» пишут в базу; при
+            ошибке смотрите консоль браузера (F12) — строки{' '}
+            <code className="text-primary">[admin] Supabase</code>.
+          </p>
+        )}
 
         {/* Сводка */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

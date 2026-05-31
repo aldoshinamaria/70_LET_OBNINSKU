@@ -30,6 +30,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check Supabase secrets
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "::warning::VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY не заданы — сайт работает в демо-режиме (localStorage), админка не видит послания гостей."
+          else
+            echo "Supabase secrets present — production will use shared database."
+          fi
+
       - name: Build
         run: npm run build
         env:

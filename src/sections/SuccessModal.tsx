@@ -22,6 +22,7 @@ import {
   HISTORY_NOTE,
   SECTION_IDS,
 } from '@/utils/constants';
+import { DEMO_MODE } from '@/services/config';
 import type { Message } from '@/types';
 
 interface SuccessModalProps {
@@ -127,7 +128,9 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
                 {FORM_SUBMIT_SUCCESS_MESSAGE}
               </h3>
               <p className="text-sm text-secondary sm:text-base">
-                Ваш голос станет частью истории Обнинска.
+                {DEMO_MODE
+                  ? 'Послание сохранено только в этом браузере (база на сервере не подключена).'
+                  : 'Ваш голос станет частью истории Обнинска.'}
               </p>
             </div>
           </motion.div>
