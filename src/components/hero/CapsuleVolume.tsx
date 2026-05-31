@@ -1,6 +1,6 @@
 import { CAPSULE_SWAY_DURATION_S } from './capsule/capsuleConstants';
 import { CapsuleGleam } from './capsule/CapsuleGleam';
-import { CapsuleHeroMedia } from './capsule/CapsuleHeroMedia';
+import { CapsuleHeroImage } from './capsule/CapsuleHeroImage';
 import { CapsuleInnerGlow } from './capsule/CapsuleInnerGlow';
 
 interface CapsuleVolumeProps {
@@ -29,7 +29,7 @@ export function CapsuleVolume({ animate }: CapsuleVolumeProps) {
         >
           <div className="relative flex h-[min(560px,84vh)] w-[min(420px,92vw)] items-center justify-center">
             <CapsuleInnerGlow />
-            <CapsuleHeroMedia use3D={animate} />
+            <CapsuleHeroImage />
             {animate && <CapsuleGleam />}
           </div>
         </div>
