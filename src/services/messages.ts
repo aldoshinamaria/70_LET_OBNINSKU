@@ -4,6 +4,7 @@ import {
   applyAdminOverrides,
   collectPublishedMessages,
   patchAdminOverride,
+  pruneOrphanAdminOverrides,
   removeAdminOverride,
 } from './adminOverrides';
 import {
@@ -271,11 +272,12 @@ export async function getAllMessages(): Promise<ServiceResult<Message[]>> {
       return { ok: false, error: error.message };
     }
 
+    const rows = ((data ?? []) as Message[]).map(normalizeMessage);
+    pruneOrphanAdminOverrides(rows.map((row) => row.id));
+
     return {
       ok: true,
-      data: applyAdminOverrides(
-        ((data ?? []) as Message[]).map(normalizeMessage),
-      ),
+      data: applyAdminOverrides(rows),
     };
   } catch {
     return { ok: false, error: NETWORK_ERROR };

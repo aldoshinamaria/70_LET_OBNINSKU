@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { FeaturedBadge, StatusBadge } from '@/components/StatusBadge';
 import { useAdminMessages } from '@/hooks/useAdminMessages';
+import { clearAllAdminOverrides } from '@/services/adminOverrides';
 import { DEMO_MODE, SUPABASE_SETUP_STEPS } from '@/services/config';
 import { formatDate, formatMessageNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
@@ -126,11 +127,29 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </ol>
           </div>
         ) : (
-          <p className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
-            Послания загружаются из Supabase. Кнопки «Одобрить» и «На сайт» пишут в базу; при
-            ошибке смотрите консоль браузера (F12) — строки{' '}
-            <code className="text-primary">[admin] Supabase</code>.
-          </p>
+          <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
+            <p>
+              Послания загружаются из Supabase. Кнопки «Одобрить» и «На сайт» пишут в базу; при
+              ошибке смотрите консоль браузера (F12) — строки{' '}
+              <code className="text-primary">[admin] Supabase</code>.
+            </p>
+            <p className="mt-2 text-xs text-secondary/90">
+              Если на главной остались старые карточки после сброса базы — очистите локальный кэш
+              модерации или выполните{' '}
+              <code className="text-primary">supabase/reset-all-messages.sql</code> в SQL Editor.
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                clearAllAdminOverrides();
+                void refetch();
+              }}
+            >
+              Очистить локальный кэш модерации
+            </Button>
+          </div>
         )}
 
         {/* Сводка */}

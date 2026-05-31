@@ -5,6 +5,13 @@
 --  После этого на сайте счётчик = 0, в админке пусто, новые номера с 1.
 -- =====================================================================
 
+-- Колонка «на сайте» (если таблица создавалась без неё)
+alter table public.messages
+  add column if not exists featured boolean not null default false;
+
+create index if not exists messages_featured_idx
+  on public.messages (featured) where featured = true;
+
 delete from public.messages;
 
 alter sequence public.message_number_seq restart with 1;

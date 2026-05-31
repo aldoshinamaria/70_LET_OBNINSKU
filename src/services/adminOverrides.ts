@@ -1,3 +1,4 @@
+import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Message, MessageStatus } from '@/types';
 
 const STORAGE_KEY = 'obninsk70_admin_overrides';
@@ -94,6 +95,34 @@ export function removeAdminOverride(id: string): boolean {
   return writeAdminOverrides(rest);
 }
 
+/** Полностью очищает локальный кэш решений модератора (localStorage). */
+export function clearAllAdminOverrides(): boolean {
+  return writeAdminOverrides({});
+}
+
+/**
+ * Удаляет «призраки» — снимки посланий, которых уже нет в базе.
+ * Иначе после сброса Supabase на сайте остаются 2–3 старых карточки.
+ */
+export function pruneOrphanAdminOverrides(validIds: Iterable<string>): void {
+  const valid = new Set(validIds);
+  const overrides = readAdminOverrides();
+  let changed = false;
+
+  for (const [id, patch] of Object.entries(overrides)) {
+    if (valid.has(id)) continue;
+
+    if (patch.snapshot || patch.featured) {
+      delete overrides[id];
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    writeAdminOverrides(overrides);
+  }
+}
+
 /** Накладывает решения модератора поверх списка из Supabase или демо-хранилища. */
 export function applyAdminOverrides(messages: Message[]): Message[] {
   const overrides = readAdminOverrides();
@@ -131,15 +160,18 @@ export function collectPublishedMessages(
     }
   }
 
-  for (const patch of Object.values(readAdminOverrides())) {
-    if (
-      patch.snapshot &&
-      patch.featured &&
-      patch.status !== 'rejected' &&
-      !patch.deleted
-    ) {
-      const snap = normalizeSnapshot(patch.snapshot);
-      byId.set(snap.id, snap);
+  // Снимки из localStorage — только в DEMO без Supabase (иначе «призраки» после сброса БД)
+  if (!isSupabaseConfigured) {
+    for (const patch of Object.values(readAdminOverrides())) {
+      if (
+        patch.snapshot &&
+        patch.featured &&
+        patch.status !== 'rejected' &&
+        !patch.deleted
+      ) {
+        const snap = normalizeSnapshot(patch.snapshot);
+        byId.set(snap.id, snap);
+      }
     }
   }
 
