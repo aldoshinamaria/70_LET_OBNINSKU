@@ -146,6 +146,7 @@ export const EMPTY_STATS: ProjectStats = {
   lastMessageName: null,
   lastMessageQuote: null,
   lastMessageCategory: null,
+  lastMessageNumber: null,
 };
 
 function sortMessagesByNewest(a: Message, b: Message): number {
@@ -167,6 +168,7 @@ export function buildProjectStats(messages: Message[]): ProjectStats {
     stats.lastMessageName = latest.name;
     stats.lastMessageQuote = excerptFromMessage(latest) || null;
     stats.lastMessageCategory = latest.category;
+    stats.lastMessageNumber = latest.message_number ?? null;
   }
 
   for (const row of sorted) {

@@ -166,7 +166,7 @@ export function StatsSocialProof({
                 exit={reduced ? undefined : { opacity: 0, y: -8 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  lastVoiceFlash && !reduced && 'last-voice-archival-flash',
+                  lastVoiceFlash && !reduced && 'last-voice-card-flash',
                 )}
               >
                 <LastVoiceCapsuleCard
@@ -175,6 +175,7 @@ export function StatsSocialProof({
                     name: stats.lastMessageName!,
                     category: stats.lastMessageCategory ?? '',
                     dateIso: stats.lastMessageAt!,
+                    messageNumber: stats.lastMessageNumber,
                   }}
                 />
               </motion.div>
