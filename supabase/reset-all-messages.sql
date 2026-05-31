@@ -14,7 +14,23 @@ create index if not exists messages_featured_idx
 
 delete from public.messages;
 
+-- Важно: без этого новые послания получат 18, 19… после удаления строк
+alter table public.messages
+  alter column message_number drop default;
+
 alter sequence public.message_number_seq restart with 1;
+
+create or replace function public.force_pending_status()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.status := 'pending';
+  new.featured := false;
+  new.message_number := nextval('public.message_number_seq');
+  return new;
+end;
+$$;
 
 -- Проверка (должно быть 0 строк):
 -- select count(*) as total from public.messages;

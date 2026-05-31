@@ -18,7 +18,7 @@ create sequence if not exists public.message_number_seq start with 1 increment b
 -- ---------------------------------------------------------------------
 create table if not exists public.messages (
   id               uuid primary key default gen_random_uuid(),
-  message_number   integer not null default nextval('public.message_number_seq'),
+  message_number   integer not null,
   name             text not null,
   category         text not null,
   location         text not null,
@@ -59,7 +59,8 @@ language plpgsql
 as $$
 begin
   new.status := 'pending';
-  -- номер присваивается последовательностью, перезаписать его нельзя
+  new.featured := false;
+  -- Один nextval на вставку (без default у колонки — иначе номера «прыгают»)
   new.message_number := nextval('public.message_number_seq');
   return new;
 end;
