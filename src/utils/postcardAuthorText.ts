@@ -3,8 +3,14 @@ import { splitWishIntoLines } from './postcardWishText';
 const POSTCARD_W = 1080;
 const POSTCARD_H = 1350;
 
-/** Manrope 700 — чуть шире, чем пожелание на пергаменте. */
-const AUTHOR_CHAR_WIDTH_RATIO = 0.56;
+/** Manrope 700 + кириллица — шире оценки по латинице. */
+const AUTHOR_CHAR_WIDTH_RATIO = 0.66;
+
+/** Запас, чтобы последние буквы не упирались в край ячейки шаблона. */
+const AUTHOR_WIDTH_SAFETY = 0.92;
+
+const AUTHOR_MAX_FONT_SIZE = 22;
+const AUTHOR_MIN_FONT_SIZE = 12;
 
 export const POSTCARD_AUTHOR_LINE_HEIGHT = 1.2;
 
@@ -14,9 +20,28 @@ export const POSTCARD_AUTHOR_BOX = {
   top: POSTCARD_H * 0.742,
   width: POSTCARD_W * 0.2,
   maxHeight: 54,
-  paddingX: 6,
+  paddingX: 10,
   maxLines: 2,
 } as const;
+
+function authorLineTooWide(
+  line: string,
+  fontSize: number,
+  maxWidthPx: number,
+): boolean {
+  return (
+    line.length * fontSize * AUTHOR_CHAR_WIDTH_RATIO >
+    maxWidthPx * AUTHOR_WIDTH_SAFETY
+  );
+}
+
+function authorLinesFit(
+  lines: string[],
+  fontSize: number,
+  maxWidthPx: number,
+): boolean {
+  return lines.every((line) => !authorLineTooWide(line, fontSize, maxWidthPx));
+}
 
 function truncateToLine(
   text: string,
@@ -56,7 +81,11 @@ export function fitAuthorTypography(name: string): {
 
   let best: { fontSize: number; lines: string[] } | null = null;
 
-  for (let fontSize = 28; fontSize >= 14; fontSize -= 2) {
+  for (
+    let fontSize = AUTHOR_MAX_FONT_SIZE;
+    fontSize >= AUTHOR_MIN_FONT_SIZE;
+    fontSize -= 2
+  ) {
     const lines = splitWishIntoLines(
       text,
       innerW,
@@ -64,6 +93,7 @@ export function fitAuthorTypography(name: string): {
       AUTHOR_CHAR_WIDTH_RATIO,
     );
     if (lines.length > maxLines) continue;
+    if (!authorLinesFit(lines, fontSize, innerW)) continue;
 
     const blockHeight = lines.length * fontSize * POSTCARD_AUTHOR_LINE_HEIGHT;
     if (blockHeight > innerH) continue;
@@ -79,7 +109,7 @@ export function fitAuthorTypography(name: string): {
 
   if (best) return best;
 
-  const fontSize = 14;
+  const fontSize = AUTHOR_MIN_FONT_SIZE;
   const lines = clampAuthorLines(
     splitWishIntoLines(text, innerW, fontSize, AUTHOR_CHAR_WIDTH_RATIO),
     maxLines,
