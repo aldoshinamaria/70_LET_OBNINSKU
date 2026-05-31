@@ -1,4 +1,3 @@
-import { Sparkles } from 'lucide-react';
 import { CapsuleWishText } from '@/components/CapsuleWishText';
 import {
   formatDate,
@@ -36,13 +35,6 @@ export function LastVoiceCapsuleCard({ voice, className }: LastVoiceCapsuleCardP
         aria-hidden
         className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/15 blur-2xl"
       />
-
-      <div className="relative mb-4 flex items-center gap-2 text-primary/75">
-        <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-        <span className="text-[11px] font-medium uppercase tracking-[0.2em]">
-          Свежий голос капсулы
-        </span>
-      </div>
 
       <CapsuleWishText
         text={voice.quote}
