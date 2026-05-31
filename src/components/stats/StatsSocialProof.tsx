@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Quote } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useLiveCounter } from '@/hooks/useLiveCounter';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -144,8 +145,9 @@ export function StatsSocialProof({
 
         {/* Последний голос в капсуле */}
         <div className="flex w-full min-w-0 flex-col lg:max-w-[26rem] lg:flex-1 lg:pt-2 xl:max-w-[28rem]">
-          <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-secondary lg:mb-5 lg:text-left">
-            Последний голос в капсуле
+          <p className="mb-4 flex items-center justify-center gap-2 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-primary sm:mb-5">
+            <Quote className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+            <span>Последний голос в капсуле</span>
           </p>
 
           <AnimatePresence mode="wait">
