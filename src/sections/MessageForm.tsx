@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { AlertCircle, Send } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Reveal } from '@/components/ui/Reveal';
@@ -8,11 +8,7 @@ import { TextArea } from '@/components/ui/TextArea';
 import { SelectField } from '@/components/ui/SelectField';
 import { Checkbox } from '@/components/ui/Checkbox';
 
-// Экран успеха с открыткой и html-to-image грузится лениво — он нужен
-// только после отправки формы и не влияет на стартовую загрузку.
-const SuccessModal = lazy(() =>
-  import('./SuccessModal').then((m) => ({ default: m.SuccessModal })),
-);
+import { SuccessModal } from './SuccessModal';
 import { useSubmitMessage } from '@/hooks/useSubmitMessage';
 import {
   EMPTY_FORM,
@@ -81,7 +77,10 @@ export function MessageForm({ onSubmitted }: MessageFormProps) {
   const handleModalClose = () => setSavedMessage(null);
 
   return (
-    <section id={SECTION_IDS.form} className="section-spacing relative">
+    <section
+      id={SECTION_IDS.form}
+      className="section-spacing relative pb-24 sm:pb-28"
+    >
       <div className="mx-auto max-w-content section-padding">
         <SectionHeading
           eyebrow="Ваше послание"
@@ -200,9 +199,7 @@ export function MessageForm({ onSubmitted }: MessageFormProps) {
       </div>
 
       {savedMessage && (
-        <Suspense fallback={null}>
-          <SuccessModal message={savedMessage} onClose={handleModalClose} />
-        </Suspense>
+        <SuccessModal message={savedMessage} onClose={handleModalClose} />
       )}
     </section>
   );

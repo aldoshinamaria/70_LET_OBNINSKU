@@ -15,6 +15,7 @@ import {
 } from './localStore';
 import { CATEGORY_OPTIONS, LOCATION_OPTIONS, FORM_LIMITS } from '@/utils/constants';
 import { truncate } from '@/utils/format';
+import { mapSupabaseError } from '@/utils/supabaseErrors';
 import type {
   Message,
   MessageFormData,
@@ -91,34 +92,67 @@ export async function createMessage(
     return { ok: false, error: 'Не удалось подключиться к Supabase.' };
   }
 
+  const insertBody = {
+    name: payload.name,
+    category: payload.category,
+    location: payload.location,
+    wish_to_city: payload.wish_to_city,
+    future_city: payload.future_city,
+    ...(payload.message_to_2096
+      ? { message_to_2096: payload.message_to_2096 }
+      : {}),
+  };
+
   try {
     const { data, error } = await supabase
       .from(MESSAGES_TABLE)
-      .insert({
-        name: payload.name,
-        category: payload.category,
-        location: payload.location,
-        wish_to_city: payload.wish_to_city,
-        future_city: payload.future_city,
-        message_to_2096: payload.message_to_2096,
-      })
-      .select('*')
-      .single();
+      .insert(insertBody)
+      .select('*');
 
     if (error) {
-      return { ok: false, error: error.message };
+      console.warn('[form] Supabase insert:', error.message, error.code);
+      return {
+        ok: false,
+        error: mapSupabaseError(error.message, error.code),
+      };
     }
 
-    const row = data as Message;
+    let row = (Array.isArray(data) ? data[0] : data) as Message | undefined;
+
+    if (!row) {
+      const { data: fallback, error: fetchError } = await supabase
+        .from(MESSAGES_TABLE)
+        .select('*')
+        .eq('name', payload.name)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.warn('[form] Supabase fetch after insert:', fetchError.message);
+        return {
+          ok: false,
+          error: mapSupabaseError(fetchError.message, fetchError.code),
+        };
+      }
+
+      row = fallback as Message | null | undefined;
+    }
+
+    if (!row?.id) {
+      return {
+        ok: false,
+        error:
+          'Не удалось получить подтверждение от сервера. Проверьте интернет и попробуйте снова.',
+      };
+    }
+
     return {
       ok: true,
-      data: {
-        ...row,
-        status: 'pending',
-        featured: Boolean(row.featured),
-      },
+      data: normalizeMessage({ ...row, status: 'pending' }),
     };
-  } catch {
+  } catch (cause) {
+    console.warn('[form] Supabase network error:', cause);
     return { ok: false, error: NETWORK_ERROR };
   }
 }

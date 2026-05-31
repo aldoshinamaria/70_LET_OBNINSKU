@@ -100,8 +100,16 @@ create policy "public read recent submit"
   to anon, authenticated
   using (
     status = 'pending'
-    and created_at >= (timezone('utc', now()) - interval '10 minutes')
+    and created_at >= (timezone('utc', now()) - interval '24 hours')
   );
+
+-- Все pending — чтобы insert().select() и админка не ломались, если сняли [DEMO]-политики.
+drop policy if exists "public read pending" on public.messages;
+create policy "public read pending"
+  on public.messages
+  for select
+  to anon, authenticated
+  using (status = 'pending');
 
 -- =====================================================================
 --  АДМИН-ДОСТУП

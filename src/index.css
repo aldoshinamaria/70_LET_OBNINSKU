@@ -78,6 +78,15 @@
     @apply py-16 sm:py-20 lg:py-12 xl:py-14;
   }
 
+  /** Якоря не прячутся под фиксированной шапкой; клики не перехватываются header. */
+  #hero,
+  #stats,
+  #about,
+  #form,
+  #voice {
+    scroll-margin-top: 5.5rem;
+  }
+
   .capsule-wish-quote {
     @apply font-display text-primary tracking-normal;
     font-style: italic;

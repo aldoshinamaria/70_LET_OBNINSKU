@@ -28,13 +28,13 @@ export function Header() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className={cn(
-        'fixed inset-x-0 top-0 z-40 transition-all duration-300',
+        'pointer-events-none fixed inset-x-0 top-0 z-40 transition-all duration-300',
         scrolled
           ? 'border-b border-border bg-background/80 backdrop-blur-xl'
           : 'border-b border-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-content items-center justify-between gap-4 px-5 py-4 sm:px-8 lg:px-12">
+      <div className="pointer-events-auto mx-auto flex max-w-content items-center justify-between gap-4 px-5 py-4 sm:px-8 lg:px-12">
         <button
           type="button"
           onClick={() => scrollToSection(SECTION_IDS.hero)}

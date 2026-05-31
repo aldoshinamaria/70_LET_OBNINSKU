@@ -1,7 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL ?? '');
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+/** Поддержка нового ключа sb_publishable_* и legacy anon JWT. */
+const supabaseAnonKey = (
+  import.meta.env.VITE_SUPABASE_ANON_KEY ??
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  ''
+).trim();
 
 /** Корень проекта без хвоста /rest/v1 (иначе PostgREST отвечает 400). */
 function normalizeSupabaseUrl(url: string): string {
