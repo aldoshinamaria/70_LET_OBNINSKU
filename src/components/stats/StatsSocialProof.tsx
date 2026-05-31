@@ -79,9 +79,9 @@ export function StatsSocialProof({
         className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/[0.07] blur-3xl lg:left-1/4"
       />
 
-      <div className="relative flex min-w-0 flex-col gap-10 sm:gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
-        {/* Левая колонка: счётчик, активность, кнопка */}
-        <div className="flex min-w-0 flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:pt-2">
+      <div className="relative flex min-w-0 flex-col gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
+        {/* Счётчик и соц. тексты — только от lg */}
+        <div className="hidden min-w-0 flex-1 flex-col items-center text-center lg:flex lg:items-start lg:text-left lg:pt-2">
           <div className="relative flex flex-col items-center gap-2 lg:items-start">
             <span
               className={cn(
@@ -125,11 +125,17 @@ export function StatsSocialProof({
           </Button>
         </div>
 
-        {/* Правая колонка: последний голос, категории, призыв */}
+        {/* Правая колонка: на мобильных — только последний голос и карточка */}
         <div className="flex w-full min-w-0 flex-col lg:max-w-[26rem] lg:flex-1 lg:pt-2 xl:max-w-[28rem]">
-          <p className="mb-5 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-secondary lg:text-left">
+          <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-secondary lg:mb-5 lg:text-left">
             Последний голос в капсуле
           </p>
+
+          {error && (
+            <p className="mb-4 text-center text-sm text-danger lg:hidden" role="alert">
+              {error}
+            </p>
+          )}
 
           <AnimatePresence mode="wait">
             {loading ? (
@@ -148,9 +154,9 @@ export function StatsSocialProof({
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduced ? undefined : { opacity: 0, y: -6 }}
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="glass-card rounded-2xl border-primary/20 px-6 py-7 text-left sm:px-8 sm:py-8"
+                className="glass-card rounded-2xl border-primary/20 px-5 py-6 text-left sm:px-8 sm:py-8"
               >
-                <blockquote className="font-display text-lg leading-snug text-text sm:text-xl">
+                <blockquote className="font-display text-base leading-snug text-text sm:text-xl">
                   «{stats.lastMessageQuote}»
                 </blockquote>
                 <figcaption className="mt-5 flex flex-col gap-1">
@@ -191,14 +197,14 @@ export function StatsSocialProof({
             </ul>
           )}
 
-          <p className="mt-8 text-center text-base leading-relaxed text-secondary lg:text-left">
+          <p className="mt-8 hidden text-center text-base leading-relaxed text-secondary lg:block lg:text-left">
             Следующее послание может стать вашим.
           </p>
 
           <Button
             size="lg"
             fullWidth
-            className="mt-6 lg:hidden"
+            className="mt-6 max-lg:inline-flex lg:hidden"
             onClick={() => scrollToSection(SECTION_IDS.form)}
           >
             Отправить послание в 2096 год
