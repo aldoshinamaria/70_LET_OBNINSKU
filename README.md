@@ -94,10 +94,8 @@ npm run dev
 
 ```bash
 npm run typecheck   # проверка ошибок TypeScript
-npm run build       # production-сборка для Vercel и корня домена (base: /)
+npm run build       # production-сборка (assets с корня /)
 npm run preview     # локальный просмотр production-сборки
-npm run build:pages # сборка для GitHub Pages (base: /70_LET_OBNINSKU/)
-npm run preview:pages
 ```
 
 ## 🔐 Переменные окружения
@@ -122,13 +120,16 @@ npm run preview:pages
 
 ## ☁️ Деплой
 
-### Vercel (основной)
+Сайт публикуется на собственный домен [obninsk70.ru](https://obninsk70.ru) (корень сайта, `base: /`).
+
+### Vercel
 
 1. Импортируйте репозиторий в [Vercel](https://vercel.com).
 2. Framework Preset: **Vite**.
-3. Build Command: **`npm run build`** (не `build:pages`), Output Directory: `dist`.
-4. Добавьте переменные окружения (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_PASSWORD`) в **Project Settings → Environment Variables**.
-5. Для корректной работы маршрута `/admin` при прямом заходе добавьте rewrite (см. `vercel.json`).
+3. Build Command: `npm run build`, Output Directory: `dist`.
+4. Домен: привяжите **obninsk70.ru** в Project Settings → Domains.
+5. Добавьте переменные окружения (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_ADMIN_PASSWORD`) в **Project Settings → Environment Variables**.
+6. Для корректной работы маршрута `/admin` при прямом заходе добавьте rewrite (см. `vercel.json`).
 
 ## 🗄 База данных
 

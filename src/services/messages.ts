@@ -10,7 +10,6 @@ import {
   localCreateMessage,
   localDeleteMessage,
   localGetAllMessages,
-  localGetApprovedMessages,
   localGetStats,
   localUpdateMessageFeatured,
   localUpdateMessageStatus,

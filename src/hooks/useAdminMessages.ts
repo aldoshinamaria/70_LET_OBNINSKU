@@ -6,7 +6,7 @@ import {
   updateMessageFeatured,
   updateMessageStatus,
 } from '@/services/messages';
-import type { Message, MessageStatus } from '@/types';
+import type { Message } from '@/types';
 
 interface UseAdminMessagesResult {
   messages: Message[];
