@@ -10,7 +10,6 @@ import {
   localCreateMessage,
   localDeleteMessage,
   localGetAllMessages,
-  localGetStats,
   localUpdateMessageFeatured,
   localUpdateMessageStatus,
 } from './localStore';
@@ -146,30 +145,31 @@ export const EMPTY_STATS: ProjectStats = {
   lastMessageAt: null,
   lastMessageName: null,
   lastMessageQuote: null,
+  lastMessageCategory: null,
 };
 
-type StatsRow = Pick<
-  Message,
-  | 'category'
-  | 'name'
-  | 'created_at'
-  | 'wish_to_city'
-  | 'future_city'
-  | 'message_to_2096'
->;
+function sortMessagesByNewest(a: Message, b: Message): number {
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+}
 
-function aggregateStatsFromRows(rows: StatsRow[]): ProjectStats {
+/** Статистика и «последний голос» из актуального списка (с учётом админ-решений). */
+export function buildProjectStats(messages: Message[]): ProjectStats {
+  const sorted = [...messages].sort(sortMessagesByNewest);
+  const approved = sorted.filter((m) => m.status === 'approved');
+
   const stats: ProjectStats = { ...EMPTY_STATS };
-  stats.messages = rows.length;
-  stats.participants = rows.length;
+  stats.messages = sorted.length;
+  stats.participants = sorted.length;
 
-  if (rows.length > 0) {
-    stats.lastMessageAt = rows[0].created_at;
-    stats.lastMessageName = rows[0].name;
-    stats.lastMessageQuote = excerptFromMessage(rows[0]) || null;
+  if (approved.length > 0) {
+    const latest = approved[0];
+    stats.lastMessageAt = latest.created_at;
+    stats.lastMessageName = latest.name;
+    stats.lastMessageQuote = excerptFromMessage(latest) || null;
+    stats.lastMessageCategory = latest.category;
   }
 
-  for (const row of rows) {
+  for (const row of sorted) {
     switch (row.category) {
       case 'школьник':
         stats.pupils += 1;
@@ -205,32 +205,15 @@ function excerptFromMessage(row: {
 }
 
 /**
- * Статистика «Город в цифрах» из таблицы messages (все послания, без демо-данных).
+ * Статистика «Город в цифрах»; последний голос — новейшее одобренное послание.
  */
 export async function getStats(): Promise<ServiceResult<ProjectStats>> {
-  if (!isSupabaseConfigured) {
-    return { ok: true, data: localGetStats() };
+  const all = await getAllMessages();
+  if (!all.ok) {
+    return { ok: false, error: all.error };
   }
 
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    return { ok: false, error: 'Не удалось подключиться к Supabase.' };
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from(MESSAGES_TABLE)
-      .select('category, name, created_at, wish_to_city, future_city, message_to_2096')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return { ok: false, error: error.message };
-    }
-
-    return { ok: true, data: aggregateStatsFromRows((data ?? []) as StatsRow[]) };
-  } catch {
-    return { ok: false, error: NETWORK_ERROR };
-  }
+  return { ok: true, data: buildProjectStats(all.data) };
 }
 
 /* --------------------------- Админ-функции --------------------------- */

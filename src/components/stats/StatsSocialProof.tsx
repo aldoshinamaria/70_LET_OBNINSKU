@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/Button';
 import { useLiveCounter } from '@/hooks/useLiveCounter';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { STAT_CATEGORY_CHIPS, SECTION_IDS } from '@/utils/constants';
+import { LastVoiceCapsuleCard } from '@/components/stats/LastVoiceCapsuleCard';
 import {
   formatCount,
-  formatRelativeTime,
   formatResidentsTrail,
   formatStatsActivity,
 } from '@/utils/format';
@@ -36,6 +36,8 @@ export function StatsSocialProof({
   const [flash, setFlash] = useState(false);
   const [, setActivityTick] = useState(0);
   const prevMessages = useRef(stats.messages);
+  const prevLastKey = useRef<string | null>(null);
+  const [lastVoiceFlash, setLastVoiceFlash] = useState(false);
 
   const activity = formatStatsActivity(stats.lastMessageAt);
   const hasLast =
@@ -46,6 +48,21 @@ export function StatsSocialProof({
   const visibleChips = STAT_CATEGORY_CHIPS.filter(
     (chip) => stats[chip.key] > 0,
   );
+
+  const lastVoiceKey = hasLast
+    ? `${stats.lastMessageAt}-${stats.lastMessageName}-${stats.lastMessageQuote}`
+    : null;
+
+  useEffect(() => {
+    if (!lastVoiceKey || lastVoiceKey === prevLastKey.current) return;
+    if (prevLastKey.current !== null) {
+      setLastVoiceFlash(true);
+      const timer = window.setTimeout(() => setLastVoiceFlash(false), 1200);
+      prevLastKey.current = lastVoiceKey;
+      return () => window.clearTimeout(timer);
+    }
+    prevLastKey.current = lastVoiceKey;
+  }, [lastVoiceKey]);
 
   useEffect(() => {
     if (stats.messages > prevMessages.current) {
@@ -80,8 +97,8 @@ export function StatsSocialProof({
       />
 
       <div className="relative flex min-w-0 flex-col gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
-        {/* Счётчик и соц. тексты — только от lg */}
-        <div className="hidden min-w-0 flex-1 flex-col items-center text-center lg:flex lg:items-start lg:text-left lg:pt-2">
+        {/* Счётчик: на мобильных — цифра и подпись; два длинных текста — только lg+ */}
+        <div className="flex min-w-0 flex-1 flex-col items-center text-center lg:items-start lg:text-left lg:pt-2">
           <div className="relative flex flex-col items-center gap-2 lg:items-start">
             <span
               className={cn(
@@ -95,7 +112,7 @@ export function StatsSocialProof({
             <p className="text-base font-medium tracking-wide text-secondary sm:text-lg">
               посланий уже сохранено
             </p>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-secondary/90 sm:text-[15px]">
+            <p className="mt-3 hidden max-w-md text-sm leading-relaxed text-secondary/90 lg:block sm:text-[15px]">
               {formatResidentsTrail(total)}
             </p>
           </div>
@@ -107,7 +124,7 @@ export function StatsSocialProof({
           )}
 
           {activity && !loading && !error && (
-            <p className="mt-8 flex items-center justify-center gap-2.5 text-sm text-secondary lg:justify-start">
+            <p className="mt-8 hidden items-center justify-center gap-2.5 text-sm text-secondary lg:flex lg:justify-start">
               <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/30" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-primary/70" />
@@ -125,17 +142,11 @@ export function StatsSocialProof({
           </Button>
         </div>
 
-        {/* Правая колонка: на мобильных — только последний голос и карточка */}
+        {/* Последний голос в капсуле */}
         <div className="flex w-full min-w-0 flex-col lg:max-w-[26rem] lg:flex-1 lg:pt-2 xl:max-w-[28rem]">
           <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.22em] text-secondary lg:mb-5 lg:text-left">
             Последний голос в капсуле
           </p>
-
-          {error && (
-            <p className="mb-4 text-center text-sm text-danger lg:hidden" role="alert">
-              {error}
-            </p>
-          )}
 
           <AnimatePresence mode="wait">
             {loading ? (
@@ -148,29 +159,25 @@ export function StatsSocialProof({
                 Загрузка последнего послания…
               </motion.p>
             ) : hasLast ? (
-              <motion.figure
-                key={`${stats.lastMessageAt}-${stats.lastMessageQuote}`}
-                initial={reduced ? false : { opacity: 0, y: 10 }}
+              <motion.div
+                key={lastVoiceKey!}
+                initial={reduced ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={reduced ? undefined : { opacity: 0, y: -6 }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="glass-card rounded-2xl border-primary/20 px-5 py-6 text-left sm:px-8 sm:py-8"
+                exit={reduced ? undefined : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  lastVoiceFlash && !reduced && 'last-voice-archival-flash',
+                )}
               >
-                <blockquote className="font-display text-base leading-snug text-text sm:text-xl">
-                  «{stats.lastMessageQuote}»
-                </blockquote>
-                <figcaption className="mt-5 flex flex-col gap-1">
-                  <cite className="not-italic text-sm font-medium text-primary">
-                    — {stats.lastMessageName}
-                  </cite>
-                  <time
-                    dateTime={stats.lastMessageAt!}
-                    className="text-sm text-secondary"
-                  >
-                    {formatRelativeTime(stats.lastMessageAt!)}
-                  </time>
-                </figcaption>
-              </motion.figure>
+                <LastVoiceCapsuleCard
+                  voice={{
+                    quote: stats.lastMessageQuote!,
+                    name: stats.lastMessageName!,
+                    category: stats.lastMessageCategory ?? '',
+                    dateIso: stats.lastMessageAt!,
+                  }}
+                />
+              </motion.div>
             ) : (
               <motion.p
                 key="empty-last"
@@ -197,7 +204,7 @@ export function StatsSocialProof({
             </ul>
           )}
 
-          <p className="mt-8 hidden text-center text-base leading-relaxed text-secondary lg:block lg:text-left">
+          <p className="mt-8 text-center text-base leading-relaxed text-secondary lg:text-left">
             Следующее послание может стать вашим.
           </p>
 

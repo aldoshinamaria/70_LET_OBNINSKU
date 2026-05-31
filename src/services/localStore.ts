@@ -1,9 +1,4 @@
-import type {
-  Message,
-  MessageInsert,
-  MessageStatus,
-  ProjectStats,
-} from '@/types';
+import type { Message, MessageInsert, MessageStatus } from '@/types';
 import { truncate } from '@/utils/format';
 
 /**
@@ -189,50 +184,6 @@ export function localGetAllMessages(): Message[] {
   return readAll().sort(byNewest);
 }
 
-export function localGetStats(): ProjectStats {
-  const rows = readAll().sort(byNewest);
-  const latest = rows[0];
-  const stats: ProjectStats = {
-    participants: rows.length,
-    messages: rows.length,
-    pupils: 0,
-    teachers: 0,
-    graduates: 0,
-    residents: 0,
-    lastMessageAt: latest?.created_at ?? null,
-    lastMessageName: latest?.name ?? null,
-    lastMessageQuote: latest
-      ? truncate(
-          latest.message_to_2096?.trim() ||
-            latest.wish_to_city?.trim() ||
-            latest.future_city?.trim() ||
-            '',
-          100,
-        ) || null
-      : null,
-  };
-
-  for (const row of rows) {
-    switch (row.category) {
-      case 'школьник':
-        stats.pupils += 1;
-        break;
-      case 'педагог':
-        stats.teachers += 1;
-        break;
-      case 'выпускник':
-        stats.graduates += 1;
-        break;
-      case 'житель города':
-        stats.residents += 1;
-        break;
-      default:
-        break;
-    }
-  }
-
-  return stats;
-}
 
 export function localUpdateMessageStatus(
   id: string,

@@ -61,6 +61,8 @@ export interface ProjectStats {
   lastMessageName: string | null;
   /** Короткая цитата из последнего послания (до 100 символов). */
   lastMessageQuote: string | null;
+  /** Категория автора последнего одобренного послания. */
+  lastMessageCategory: string | null;
 }
 
 /** Числовые поля для карточек категорий в блоке статистики. */
