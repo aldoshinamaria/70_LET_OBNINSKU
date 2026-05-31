@@ -22,6 +22,7 @@ export default defineConfig({
           motion: ['framer-motion'],
           supabase: ['@supabase/supabase-js'],
           imaging: ['html-to-image'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
         },
       },
     },
