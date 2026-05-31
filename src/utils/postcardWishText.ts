@@ -7,12 +7,14 @@ export const POSTCARD_WISH_LINE_STEP = Math.round(34 * POSTCARD_WISH_LINE_HEIGHT
 export const POSTCARD_WISH_BOX = {
   left: 248,
   top: 370 + POSTCARD_WISH_LINE_STEP,
-  width: 500,
+  /** Правый край сдвинут влево — текст не выходит за пергамент шаблона */
+  width: 440,
   height: 300,
-  paddingX: 20,
+  paddingX: 28,
   paddingY: 10,
 } as const;
-const CHAR_WIDTH_RATIO = 0.52;
+/** Cormorant Garamond italic шире, чем Manrope — запас по ширине строки */
+const CHAR_WIDTH_RATIO = 0.58;
 
 /** Разбивает текст по пробелам, не рвёт слова без необходимости. */
 export function splitWishIntoLines(

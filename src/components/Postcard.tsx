@@ -93,6 +93,7 @@ export const Postcard = forwardRef<HTMLDivElement, PostcardProps>(
             justifyContent: 'center',
             padding: `${POSTCARD_WISH_BOX.paddingY}px ${POSTCARD_WISH_BOX.paddingX}px`,
             boxSizing: 'border-box',
+            overflow: 'hidden',
           }}
         >
           <div

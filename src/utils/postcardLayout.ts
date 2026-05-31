@@ -7,7 +7,7 @@ export const POSTCARD_LAYOUT = {
   message: {
     left: '23%',
     top: '40.5%',
-    width: '54%',
+    width: '41%',
     height: '21%',
   },
   /** Номер на золотой крышке капсулы */
