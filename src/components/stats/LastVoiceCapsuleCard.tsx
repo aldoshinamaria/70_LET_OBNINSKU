@@ -40,7 +40,7 @@ export function LastVoiceCapsuleCard({ voice, className }: LastVoiceCapsuleCardP
         text={voice.quote}
         name={voice.name}
         align="left"
-        quoteClassName="line-clamp-4 text-base leading-relaxed text-text [text-shadow:0_0_20px_rgba(217,179,108,0.15)] sm:text-lg"
+        quoteClassName="whitespace-pre-wrap text-base leading-relaxed text-text [text-shadow:0_0_20px_rgba(217,179,108,0.15)] sm:text-lg"
         signatureClassName="mt-3 text-lg sm:text-xl"
       />
 

@@ -44,6 +44,17 @@ export function wishDisplayText(message: Message): string {
   return '';
 }
 
+/** Все части послания для карточки «последний голос» (без обрезки). */
+export function fullMessageText(
+  message: Pick<Message, 'wish_to_city' | 'future_city' | 'message_to_2096'>,
+): string {
+  const parts: string[] = [];
+  if (message.wish_to_city?.trim()) parts.push(message.wish_to_city.trim());
+  if (message.future_city?.trim()) parts.push(message.future_city.trim());
+  if (message.message_to_2096?.trim()) parts.push(message.message_to_2096.trim());
+  return parts.join('\n\n');
+}
+
 /** Подпись-источник для главного текста (что именно показываем). */
 export function primaryMessageLabel(message: Message): string {
   if (message.message_to_2096 && message.message_to_2096.trim()) {

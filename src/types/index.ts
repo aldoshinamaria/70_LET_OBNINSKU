@@ -59,7 +59,7 @@ export interface ProjectStats {
   lastMessageAt: string | null;
   /** Имя автора последнего послания. */
   lastMessageName: string | null;
-  /** Короткая цитата из последнего послания (до 100 символов). */
+  /** Полный текст последнего одобренного послания (все поля формы). */
   lastMessageQuote: string | null;
   /** Категория автора последнего одобренного послания. */
   lastMessageCategory: string | null;

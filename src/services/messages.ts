@@ -15,7 +15,7 @@ import {
   localUpdateMessageStatus,
 } from './localStore';
 import { CATEGORY_OPTIONS, LOCATION_OPTIONS, FORM_LIMITS } from '@/utils/constants';
-import { truncate } from '@/utils/format';
+import { fullMessageText } from '@/utils/message';
 import { mapSupabaseError } from '@/utils/supabaseErrors';
 import type {
   Message,
@@ -201,7 +201,7 @@ export function buildProjectStats(messages: Message[]): ProjectStats {
     const latest = approved[0];
     stats.lastMessageAt = latest.created_at;
     stats.lastMessageName = latest.name;
-    stats.lastMessageQuote = excerptFromMessage(latest) || null;
+    stats.lastMessageQuote = fullMessageText(latest) || null;
     stats.lastMessageCategory = latest.category;
     stats.lastMessageNumber = latest.message_number ?? null;
   }
@@ -226,19 +226,6 @@ export function buildProjectStats(messages: Message[]): ProjectStats {
   }
 
   return stats;
-}
-
-function excerptFromMessage(row: {
-  wish_to_city?: string;
-  future_city?: string;
-  message_to_2096?: string | null;
-}): string {
-  const text =
-    row.message_to_2096?.trim() ||
-    row.wish_to_city?.trim() ||
-    row.future_city?.trim() ||
-    '';
-  return text ? truncate(text, 100) : '';
 }
 
 /**
