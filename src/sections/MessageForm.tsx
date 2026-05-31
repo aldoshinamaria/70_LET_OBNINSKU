@@ -185,8 +185,14 @@ export function MessageForm({ onSubmitted }: MessageFormProps) {
               </div>
             )}
 
-            <Button type="submit" size="lg" fullWidth loading={submitting}>
-              {!submitting && <Send className="h-5 w-5" />}
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              loading={submitting}
+              className="gap-2 px-5 py-3.5 text-sm leading-snug sm:px-8 sm:py-4 sm:text-lg [&_svg]:h-4 [&_svg]:w-4 sm:[&_svg]:h-5 sm:[&_svg]:w-5"
+            >
+              {!submitting && <Send className="shrink-0" aria-hidden />}
               Отправить в капсулу времени
             </Button>
           </form>

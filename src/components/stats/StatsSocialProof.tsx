@@ -214,7 +214,7 @@ export function StatsSocialProof({
           <Button
             size="lg"
             fullWidth
-            className="mt-6 max-lg:inline-flex lg:hidden"
+            className="mt-6 max-lg:inline-flex max-lg:gap-2 max-lg:px-5 max-lg:py-3.5 max-lg:text-sm max-lg:leading-snug lg:hidden sm:max-lg:text-base"
             onClick={() => scrollToSection(SECTION_IDS.form)}
           >
             Отправить послание в 2096 год
