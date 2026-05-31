@@ -79,25 +79,15 @@ export function voicesFromMessages(messages: readonly Message[]): CapsuleVoice[]
 }
 
 /**
- * Голоса для орбиты в hero: сначала одобренные из БД, затем демо до {@link MAX_ORBIT_ITEMS}.
- * Без одобренных — `undefined`, и CapsuleStage подставит `sampleMessages` (5 слотов).
+ * Голоса для орбиты в hero — только одобренные послания из базы (без демо-подмешивания).
  */
 export function buildHeroOrbitVoices(
   messages: readonly Message[],
-): CapsuleVoice[] | undefined {
-  const fromDb = voicesFromMessages(messages);
-  if (fromDb.length === 0) return undefined;
+): CapsuleVoice[] {
+  return voicesFromMessages(messages).slice(0, MAX_ORBIT_ITEMS);
+}
 
-  const merged: CapsuleVoice[] = [...fromDb];
-  const seen = new Set(merged.map((v) => v.id));
-
-  for (const sample of sampleMessages) {
-    if (merged.length >= MAX_ORBIT_ITEMS) break;
-    if (!seen.has(sample.id)) {
-      merged.push(sample);
-      seen.add(sample.id);
-    }
-  }
-
-  return merged.slice(0, MAX_ORBIT_ITEMS);
+/** Демо-орбита для локальной разработки без Supabase. */
+export function buildDemoHeroOrbitVoices(): CapsuleVoice[] {
+  return sampleMessages.slice(0, MAX_ORBIT_ITEMS);
 }

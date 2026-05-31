@@ -5,13 +5,13 @@ import { useMessageCycle } from '@/hooks/useMessageCycle';
 import { ORBIT_RING_BOX_PX, useOrbitWishes } from '@/hooks/useOrbitWishes';
 import { useOrbitLayout } from '@/hooks/useOrbitLayout';
 import { CapsuleVolume } from './CapsuleVolume';
-import { sampleMessages, type CapsuleVoice } from '@/data/sampleMessages';
+import type { CapsuleVoice } from '@/data/sampleMessages';
 
 interface CapsuleStageProps {
   voices?: readonly CapsuleVoice[];
 }
 
-export function CapsuleStage({ voices = sampleMessages }: CapsuleStageProps) {
+export function CapsuleStage({ voices = [] }: CapsuleStageProps) {
   const reduced = usePrefersReducedMotion();
   const { phase } = useMessageCycle(voices.length, reduced);
   const orbitOffset = useOrbitWishes(voices.length, reduced);

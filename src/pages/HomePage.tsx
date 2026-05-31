@@ -1,5 +1,9 @@
 import { useCallback, useMemo } from 'react';
-import { buildHeroOrbitVoices } from '@/data/sampleMessages';
+import {
+  buildDemoHeroOrbitVoices,
+  buildHeroOrbitVoices,
+} from '@/data/sampleMessages';
+import { DEMO_MODE } from '@/services/config';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Hero } from '@/sections/Hero';
@@ -24,7 +28,11 @@ export function HomePage() {
     void refetchMessages();
   }, [refetchStats, refetchMessages]);
 
-  const heroVoices = useMemo(() => buildHeroOrbitVoices(messages), [messages]);
+  const heroVoices = useMemo(
+    () =>
+      DEMO_MODE ? buildDemoHeroOrbitVoices() : buildHeroOrbitVoices(messages),
+    [messages],
+  );
 
   return (
     <>

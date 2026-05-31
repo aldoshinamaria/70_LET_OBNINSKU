@@ -6,7 +6,6 @@ import type { Message, MessageInsert, MessageStatus } from '@/types';
  */
 
 const STORAGE_KEY = 'obninsk70_demo_messages';
-const SEED_FLAG_KEY = 'obninsk70_demo_seeded';
 
 function safeUuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -33,86 +32,6 @@ function normalizeMessage(raw: Message): Message {
   };
 }
 
-/** Несколько живых демо-посланий, чтобы проект «дышал» без бэкенда. */
-function buildSeed(): Message[] {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-
-  const seed: Array<
-    Omit<Message, 'id' | 'message_number' | 'created_at'>
-  > = [
-    {
-      name: 'Анна',
-      category: 'педагог',
-      location: 'Обнинск',
-      wish_to_city:
-        'Пусть Обнинск всегда остаётся городом учёных и мечтателей, где каждый ребёнок верит в большое будущее.',
-      future_city:
-        'Через 70 лет вижу зелёный город-сад с лабораториями мирового уровня и счастливыми людьми на улицах.',
-      message_to_2096:
-        'Берегите наследие первого наукограда. Мы верили в вас задолго до вашего рождения.',
-      status: 'approved',
-      featured: true,
-    },
-    {
-      name: 'Дмитрий',
-      category: 'выпускник',
-      location: 'Калужская область',
-      wish_to_city:
-        'Желаю родному городу новых открытий, сильной науки и тёплых вечеров на берегу Протвы.',
-      future_city:
-        'Обнинск будущего — это умный город, где технологии служат людям, а парки соединяют поколения.',
-      message_to_2096: '',
-      status: 'approved',
-      featured: true,
-    },
-    {
-      name: 'Мария',
-      category: 'студент',
-      location: 'Обнинск',
-      wish_to_city:
-        'Пусть в городе появляется больше пространств для молодёжи, идей и смелых стартапов.',
-      future_city:
-        'Я мечтаю, что Обнинск станет центром науки, куда едут учиться со всего мира.',
-      message_to_2096:
-        'Если читаете это — значит, мечты сбываются. Продолжайте мечтать смелее нас.',
-      status: 'approved',
-      featured: true,
-    },
-    {
-      name: 'Игорь',
-      category: 'житель города',
-      location: 'Обнинск',
-      wish_to_city:
-        'Желаю городу спокойствия, развития науки и бережного отношения к истории наукограда.',
-      future_city:
-        'Вижу Обнинск, где молодёжь остаётся в городе, а каждая улица хранит память о великих открытиях.',
-      message_to_2096: '',
-      status: 'approved',
-      featured: false,
-    },
-    {
-      name: 'Сергей',
-      category: 'житель города',
-      location: 'Обнинск',
-      wish_to_city:
-        'Спасибо городу за детство и за людей. Желаю Обнинску оставаться добрым и человечным.',
-      future_city:
-        'Вижу город, где сохранили историю первой АЭС и при этом смело шагнули в будущее.',
-      message_to_2096: '',
-      status: 'pending',
-      featured: false,
-    },
-  ];
-
-  return seed.map((item, index) => ({
-    ...item,
-    id: safeUuid(),
-    message_number: index + 1,
-    created_at: new Date(now - (seed.length - index) * day).toISOString(),
-  }));
-}
-
 function readAll(): Message[] {
   if (!isStorageAvailable()) return [];
 
@@ -120,13 +39,7 @@ function readAll(): Message[] {
     const raw = localStorage.getItem(STORAGE_KEY);
 
     if (raw === null) {
-      if (localStorage.getItem(SEED_FLAG_KEY) === 'done') {
-        return [];
-      }
-      const seed = buildSeed();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
-      localStorage.setItem(SEED_FLAG_KEY, 'done');
-      return seed;
+      return [];
     }
 
     const parsed = JSON.parse(raw) as unknown;
