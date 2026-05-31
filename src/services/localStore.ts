@@ -1,5 +1,4 @@
 import type { Message, MessageInsert, MessageStatus } from '@/types';
-import { truncate } from '@/utils/format';
 
 /**
  * Демо-хранилище на localStorage. Полностью повторяет поведение Supabase:
