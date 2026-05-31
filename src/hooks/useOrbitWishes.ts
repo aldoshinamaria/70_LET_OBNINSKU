@@ -12,6 +12,15 @@ export const ORBIT_RADIUS_PX = 262;
 /** Размер бокса кольца (диаметр орбиты + запас под текст). */
 export const ORBIT_RING_BOX_PX = ORBIT_RADIUS_PX * 2 + 170;
 
+/** Запас снизу/сверху под цитату (особенно подсвеченное послание внизу). */
+export const ORBIT_TEXT_RESERVE_PX = 100;
+
+/** Радиус орбиты под фактический размер бокса (мобильные не обрезают текст). */
+export function computeOrbitRadius(boxPx: number): number {
+  const maxByBox = boxPx / 2 - ORBIT_TEXT_RESERVE_PX;
+  return Math.round(Math.min(ORBIT_RADIUS_PX, Math.max(104, maxByBox)));
+}
+
 /**
  * Наклон плоскости орбиты (rotateX).
  * Отрицательный угол: подсвеченное послание (+Z) оказывается внизу капсулы.

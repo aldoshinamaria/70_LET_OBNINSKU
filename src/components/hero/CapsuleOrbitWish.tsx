@@ -51,7 +51,7 @@ export function CapsuleOrbitWish({
       }}
     >
       <div
-        className="w-[min(188px,36vw)] max-w-none origin-center sm:w-[208px]"
+        className="w-[min(168px,44vw)] max-w-none origin-center sm:w-[208px]"
         style={{
           transform: positionTransform,
           opacity,

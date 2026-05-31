@@ -100,7 +100,7 @@ export function Hero({ voices }: HeroProps) {
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.1, ease: 'easeOut' }}
-          className="relative w-full min-w-0 overflow-hidden"
+          className="relative w-full min-w-0 overflow-visible lg:overflow-hidden"
         >
           <CapsuleStage voices={voices} />
         </motion.div>

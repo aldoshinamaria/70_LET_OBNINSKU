@@ -1,9 +1,5 @@
 import { CapsuleOrbitWish } from './CapsuleOrbitWish';
-import {
-  MAX_ORBIT_ITEMS,
-  ORBIT_RADIUS_PX,
-  ORBIT_TILT_X_DEG,
-} from '@/hooks/useOrbitWishes';
+import { MAX_ORBIT_ITEMS, ORBIT_TILT_X_DEG } from '@/hooks/useOrbitWishes';
 import { useOrbitRotation } from '@/hooks/useOrbitRotation';
 import type { CapsuleVoice } from '@/data/sampleMessages';
 
@@ -11,12 +7,14 @@ interface CapsuleOrbitRingProps {
   voices: readonly CapsuleVoice[];
   offset: number;
   reducedMotion: boolean;
+  radiusPx: number;
 }
 
 export function CapsuleOrbitRing({
   voices,
   offset,
   reducedMotion,
+  radiusPx,
 }: CapsuleOrbitRingProps) {
   const count = Math.min(voices.length, MAX_ORBIT_ITEMS);
   const ringRotation = useOrbitRotation(!reducedMotion && count > 0);
@@ -62,7 +60,7 @@ export function CapsuleOrbitRing({
                 key={`${slotIndex}-${voice.id}`}
                 voice={voice}
                 angleDeg={angleDeg}
-                radiusPx={ORBIT_RADIUS_PX}
+                radiusPx={radiusPx}
                 ringRotationDeg={ringRotation}
                 reducedMotion={reducedMotion}
               />
