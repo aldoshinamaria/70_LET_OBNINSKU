@@ -32,14 +32,13 @@ export function CapsuleStage({ voices = sampleMessages }: CapsuleStageProps) {
             transition={{ duration: 0.9, ease: 'easeOut' }}
           />
 
-          {/* Общий центр: капсула и орбита в одной 3D-сцене */}
+          {/* Центр: капсула (2D) и орбита посланий */}
           <div
             className="capsule-stage-hub absolute left-1/2 top-1/2 max-w-[calc(100vw-2.5rem)]"
             style={{
               width: `min(calc(100vw - 2.5rem), ${ORBIT_RING_BOX_PX}px)`,
               height: `min(calc(100vw - 2.5rem), ${ORBIT_RING_BOX_PX}px)`,
               transform: 'translate(-50%, -50%)',
-              perspective: '1400px',
             }}
           >
             <CapsuleOrbitRing
