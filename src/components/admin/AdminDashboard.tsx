@@ -150,9 +150,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               obninsk70.ru (орбита и «Голос Обнинска»). Только «Одобрить» на главной не появится.
             </p>
             <p className="mt-2 text-xs text-secondary/90">
-              Если кнопки не меняют статус — в Supabase выполните{' '}
-              <code className="text-primary">supabase/fix-admin-policies.sql</code>.
-              Расхождения между браузерами — «Очистить локальный кэш модерации».
+              Ошибка «нет прав модерации» — один раз выполните в Supabase SQL Editor файл{' '}
+              <code className="text-primary">supabase/setup-production.sql</code>.
             </p>
             <Button
               variant="secondary"

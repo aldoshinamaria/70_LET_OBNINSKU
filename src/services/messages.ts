@@ -59,22 +59,22 @@ type AdminPatchResult =
   | { ok: true }
   | { ok: false; error: string };
 
-/** Update с проверкой: RLS часто даёт «успех» без изменения строк. */
+/** Update с проверкой по count (RLS без update даёт 0 строк, без явной ошибки). */
 async function applyAdminRowUpdate(
   supabase: SupabaseClient,
   id: string,
   patch: Record<string, unknown>,
 ): Promise<AdminPatchResult> {
-  const { data, error } = await supabase
+  const { error, count } = await supabase
     .from(MESSAGES_TABLE)
     .update(patch)
     .eq('id', id)
-    .select('id');
+    .select('id', { count: 'exact', head: true });
 
   if (error) {
     return { ok: false, error: mapSupabaseError(error.message, error.code) };
   }
-  if (!data?.length) {
+  if (!count) {
     return { ok: false, error: ADMIN_RLS_DENIED_MESSAGE };
   }
   return { ok: true };
@@ -84,16 +84,16 @@ async function applyAdminRowDelete(
   supabase: SupabaseClient,
   id: string,
 ): Promise<AdminPatchResult> {
-  const { data, error } = await supabase
+  const { error, count } = await supabase
     .from(MESSAGES_TABLE)
     .delete()
     .eq('id', id)
-    .select('id');
+    .select('id', { count: 'exact', head: true });
 
   if (error) {
     return { ok: false, error: mapSupabaseError(error.message, error.code) };
   }
-  if (!data?.length) {
+  if (!count) {
     return { ok: false, error: ADMIN_RLS_DENIED_MESSAGE };
   }
   return { ok: true };
