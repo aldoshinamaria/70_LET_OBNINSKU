@@ -8,6 +8,12 @@ import {
   removeAdminOverride,
 } from './adminOverrides';
 import {
+  hasFeaturedColumn,
+  isFeaturedMissingDbError,
+  markFeaturedColumnMissing,
+  noteMessagesSchemaFromRows,
+} from './dbSchema';
+import {
   localCreateMessage,
   localDeleteMessage,
   localGetAllMessages,
@@ -33,10 +39,16 @@ const NETWORK_ERROR =
 const useLocal = !isSupabaseConfigured;
 
 function normalizeMessage(row: Message): Message {
-  return {
-    ...row,
-    featured: Boolean(row.featured),
-  };
+  const featured = Object.prototype.hasOwnProperty.call(row, 'featured')
+    ? Boolean(row.featured)
+    : false;
+  return { ...row, featured };
+}
+
+function mapRowsFromDb(data: unknown[]): Message[] {
+  const rows = (data ?? []) as Record<string, unknown>[];
+  noteMessagesSchemaFromRows(rows);
+  return rows.map((row) => normalizeMessage(row as unknown as Message));
 }
 
 function toInsertPayload(form: MessageFormData): MessageInsert {
@@ -181,10 +193,7 @@ async function fetchMessagesRaw(): Promise<ServiceResult<Message[]>> {
       return { ok: false, error: mapSupabaseError(error.message, error.code) };
     }
 
-    return {
-      ok: true,
-      data: ((data ?? []) as Message[]).map(normalizeMessage),
-    };
+    return { ok: true, data: mapRowsFromDb(data ?? []) };
   } catch {
     return { ok: false, error: NETWORK_ERROR };
   }
@@ -321,13 +330,22 @@ export async function updateMessageStatus(
   }
 
   const patch: { status: MessageStatus; featured?: boolean } = { status };
-  if (status === 'rejected') patch.featured = false;
+  if (status === 'rejected' && hasFeaturedColumn()) {
+    patch.featured = false;
+  }
 
   try {
-    const { error } = await supabase
-      .from(MESSAGES_TABLE)
-      .update(patch)
-      .eq('id', id);
+    let { error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id);
+
+    if (error && isFeaturedMissingDbError(error.message, error.code)) {
+      markFeaturedColumnMissing();
+      if (status === 'rejected') {
+        ({ error } = await supabase
+          .from(MESSAGES_TABLE)
+          .update({ status })
+          .eq('id', id));
+      }
+    }
 
     if (error) {
       console.warn('[admin] Supabase update status:', error.message);
@@ -379,15 +397,26 @@ export async function updateMessageFeatured(
     return { ok: true, data: true };
   }
 
-  const patch = featured
+  const patchWithFeatured = featured
     ? { featured: true, status: 'approved' as MessageStatus }
     : { featured: false };
 
+  const patchLegacy = featured
+    ? { status: 'approved' as MessageStatus }
+    : { status: 'pending' as MessageStatus };
+
   try {
-    const { error } = await supabase
-      .from(MESSAGES_TABLE)
-      .update(patch)
-      .eq('id', id);
+    let patch: Record<string, unknown> = hasFeaturedColumn()
+      ? patchWithFeatured
+      : patchLegacy;
+
+    let { error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id);
+
+    if (error && isFeaturedMissingDbError(error.message, error.code)) {
+      markFeaturedColumnMissing();
+      patch = patchLegacy;
+      ({ error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id));
+    }
 
     if (error) {
       console.warn('[admin] Supabase update featured:', error.message);

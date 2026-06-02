@@ -25,6 +25,18 @@ export function mapSupabaseError(message: string, code?: string): string {
     );
   }
 
+  if (
+    code === 'PGRST204' ||
+    code === '42703' ||
+    (lower.includes('featured') &&
+      (lower.includes('column') || lower.includes('schema cache')))
+  ) {
+    return (
+      'В базе нет колонки featured. В Supabase → SQL Editor выполните ' +
+      'supabase/migrate-add-featured.sql, затем снова нажмите «На сайт».'
+    );
+  }
+
   if (code === 'PGRST116' || lower.includes('0 rows')) {
     return (
       'Послание, вероятно, сохранено, но ответ сервера не получен. ' +

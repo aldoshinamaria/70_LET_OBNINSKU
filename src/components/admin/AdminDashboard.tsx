@@ -16,6 +16,10 @@ import { FeaturedBadge, StatusBadge } from '@/components/StatusBadge';
 import { useAdminMessages } from '@/hooks/useAdminMessages';
 import { clearAllAdminOverrides } from '@/services/adminOverrides';
 import { DEMO_MODE, SUPABASE_SETUP_STEPS } from '@/services/config';
+import {
+  FEATURED_COLUMN_MIGRATION,
+  shouldWarnFeaturedMigration,
+} from '@/services/dbSchema';
 import { formatDate, formatMessageNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
 import type { Message, MessageStatus } from '@/types';
@@ -127,7 +131,18 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </ol>
           </div>
         ) : (
-          <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
+          <div className="mb-4 flex flex-col gap-3">
+            {shouldWarnFeaturedMigration() && (
+              <div className="rounded-xl border border-danger/50 bg-danger/10 px-4 py-3 text-sm text-danger">
+                <p className="font-semibold">Нужно обновить базу Supabase</p>
+                <p className="mt-1 text-text/90">{FEATURED_COLUMN_MIGRATION}</p>
+                <p className="mt-2 text-xs text-secondary">
+                  Пока колонки нет: «На сайт» ставит статус «одобрено», на главной видны все
+                  одобренные. После миграции снова нажмите «На сайт» для каждого послания.
+                </p>
+              </div>
+            )}
+            <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
             <p>
               Список один для всех устройств — из Supabase.{' '}
               <strong className="text-text">«На сайт»</strong> — послание видят все на
@@ -148,6 +163,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             >
               Очистить локальный кэш модерации
             </Button>
+            </div>
           </div>
         )}
 

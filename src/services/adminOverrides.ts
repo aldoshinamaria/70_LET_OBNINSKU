@@ -1,4 +1,5 @@
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { isPublishedOnSite } from '@/services/dbSchema';
 import type { Message, MessageStatus } from '@/types';
 
 const STORAGE_KEY = 'obninsk70_admin_overrides';
@@ -157,9 +158,7 @@ export function collectPublishedMessages(
     ? messages
     : applyAdminOverrides(messages);
 
-  const published = source.filter(
-    (message) => message.status === 'approved' && message.featured,
-  );
+  const published = source.filter(isPublishedOnSite);
 
   if (!isSupabaseConfigured) {
     const byId = new Map(published.map((m) => [m.id, m]));
