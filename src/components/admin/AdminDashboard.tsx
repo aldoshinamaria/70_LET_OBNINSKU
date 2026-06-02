@@ -45,6 +45,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     actingId,
     error,
     actionError,
+    actionSuccess,
     refetch,
     approve,
     reject,
@@ -149,8 +150,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               obninsk70.ru (орбита и «Голос Обнинска»). Только «Одобрить» на главной не появится.
             </p>
             <p className="mt-2 text-xs text-secondary/90">
-              Если статусы на разных компьютерах расходятся — нажмите «Очистить локальный кэш
-              модерации» на каждом браузере, где открывали админку, затем снова «На сайт».
+              Если кнопки не меняют статус — в Supabase выполните{' '}
+              <code className="text-primary">supabase/fix-admin-policies.sql</code>.
+              Расхождения между браузерами — «Очистить локальный кэш модерации».
             </p>
             <Button
               variant="secondary"
@@ -200,6 +202,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             className="w-full rounded-xl border border-border bg-surface/60 py-3 pl-11 pr-4 text-text placeholder:text-secondary/50 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
+
+        {actionSuccess && !actionError && !error && (
+          <div className="mt-4 rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+            {actionSuccess}
+          </div>
+        )}
 
         {(error || actionError) && (
           <div className="mt-4 flex items-start gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">

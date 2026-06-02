@@ -1,3 +1,7 @@
+/** Когда RLS блокирует update/delete без явной ошибки (0 строк). */
+export const ADMIN_RLS_DENIED_MESSAGE =
+  'Кнопки не меняют базу: нет прав модерации. В Supabase → SQL Editor выполните supabase/fix-admin-policies.sql, затем обновите админку.';
+
 /** Понятные сообщения об ошибках Supabase для формы и админки. */
 export function mapSupabaseError(message: string, code?: string): string {
   const lower = message.toLowerCase();

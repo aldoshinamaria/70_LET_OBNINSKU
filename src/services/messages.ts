@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 import { MESSAGES_TABLE, getSupabase } from './supabase';
 import {
@@ -22,7 +23,10 @@ import {
 } from './localStore';
 import { CATEGORY_OPTIONS, LOCATION_OPTIONS, FORM_LIMITS } from '@/utils/constants';
 import { fullMessageText } from '@/utils/message';
-import { mapSupabaseError } from '@/utils/supabaseErrors';
+import {
+  ADMIN_RLS_DENIED_MESSAGE,
+  mapSupabaseError,
+} from '@/utils/supabaseErrors';
 import type {
   Message,
   MessageFormData,
@@ -49,6 +53,50 @@ function mapRowsFromDb(data: unknown[]): Message[] {
   const rows = (data ?? []) as Record<string, unknown>[];
   noteMessagesSchemaFromRows(rows);
   return rows.map((row) => normalizeMessage(row as unknown as Message));
+}
+
+type AdminPatchResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Update с проверкой: RLS часто даёт «успех» без изменения строк. */
+async function applyAdminRowUpdate(
+  supabase: SupabaseClient,
+  id: string,
+  patch: Record<string, unknown>,
+): Promise<AdminPatchResult> {
+  const { data, error } = await supabase
+    .from(MESSAGES_TABLE)
+    .update(patch)
+    .eq('id', id)
+    .select('id');
+
+  if (error) {
+    return { ok: false, error: mapSupabaseError(error.message, error.code) };
+  }
+  if (!data?.length) {
+    return { ok: false, error: ADMIN_RLS_DENIED_MESSAGE };
+  }
+  return { ok: true };
+}
+
+async function applyAdminRowDelete(
+  supabase: SupabaseClient,
+  id: string,
+): Promise<AdminPatchResult> {
+  const { data, error } = await supabase
+    .from(MESSAGES_TABLE)
+    .delete()
+    .eq('id', id)
+    .select('id');
+
+  if (error) {
+    return { ok: false, error: mapSupabaseError(error.message, error.code) };
+  }
+  if (!data?.length) {
+    return { ok: false, error: ADMIN_RLS_DENIED_MESSAGE };
+  }
+  return { ok: true };
 }
 
 function toInsertPayload(form: MessageFormData): MessageInsert {
@@ -329,30 +377,22 @@ export async function updateMessageStatus(
     return { ok: true, data: true };
   }
 
-  const patch: { status: MessageStatus; featured?: boolean } = { status };
+  const patch: Record<string, unknown> = { status };
   if (status === 'rejected' && hasFeaturedColumn()) {
     patch.featured = false;
   }
 
   try {
-    let { error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id);
+    let result = await applyAdminRowUpdate(supabase, id, patch);
 
-    if (error && isFeaturedMissingDbError(error.message, error.code)) {
+    if (!result.ok && isFeaturedMissingDbError(result.error)) {
       markFeaturedColumnMissing();
-      if (status === 'rejected') {
-        ({ error } = await supabase
-          .from(MESSAGES_TABLE)
-          .update({ status })
-          .eq('id', id));
-      }
+      result = await applyAdminRowUpdate(supabase, id, { status });
     }
 
-    if (error) {
-      console.warn('[admin] Supabase update status:', error.message);
-      return {
-        ok: false,
-        error: mapSupabaseError(error.message, error.code),
-      };
+    if (!result.ok) {
+      console.warn('[admin] Supabase update status:', result.error);
+      return { ok: false, error: result.error };
     }
 
     removeAdminOverride(id);
@@ -410,20 +450,16 @@ export async function updateMessageFeatured(
       ? patchWithFeatured
       : patchLegacy;
 
-    let { error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id);
+    let result = await applyAdminRowUpdate(supabase, id, patch);
 
-    if (error && isFeaturedMissingDbError(error.message, error.code)) {
+    if (!result.ok && isFeaturedMissingDbError(result.error)) {
       markFeaturedColumnMissing();
-      patch = patchLegacy;
-      ({ error } = await supabase.from(MESSAGES_TABLE).update(patch).eq('id', id));
+      result = await applyAdminRowUpdate(supabase, id, patchLegacy);
     }
 
-    if (error) {
-      console.warn('[admin] Supabase update featured:', error.message);
-      return {
-        ok: false,
-        error: mapSupabaseError(error.message, error.code),
-      };
+    if (!result.ok) {
+      console.warn('[admin] Supabase update featured:', result.error);
+      return { ok: false, error: result.error };
     }
 
     removeAdminOverride(id);
@@ -452,14 +488,11 @@ export async function deleteMessage(id: string): Promise<ServiceResult<true>> {
   }
 
   try {
-    const { error } = await supabase.from(MESSAGES_TABLE).delete().eq('id', id);
+    const result = await applyAdminRowDelete(supabase, id);
 
-    if (error) {
-      console.warn('[admin] Supabase delete:', error.message);
-      return {
-        ok: false,
-        error: mapSupabaseError(error.message, error.code),
-      };
+    if (!result.ok) {
+      console.warn('[admin] Supabase delete:', result.error);
+      return { ok: false, error: result.error };
     }
 
     removeAdminOverride(id);

@@ -13,6 +13,7 @@ interface UseAdminMessagesResult {
   actingId: string | null;
   error: string | null;
   actionError: string | null;
+  actionSuccess: string | null;
   refetch: () => Promise<void>;
   approve: (id: string) => Promise<void>;
   reject: (id: string) => Promise<void>;
@@ -27,6 +28,7 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
   const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const refetch = useCallback(async (options?: { silent?: boolean }) => {
     if (!options?.silent) {
@@ -53,8 +55,10 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
   const runAction = async (
     id: string,
     action: () => Promise<{ ok: boolean; error?: string }>,
+    successMessage: string,
   ) => {
     setActionError(null);
+    setActionSuccess(null);
     setActingId(id);
     try {
       const result = await action();
@@ -62,6 +66,7 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
         setActionError(result.error ?? 'Не удалось выполнить действие.');
         return;
       }
+      setActionSuccess(successMessage);
       await refetch({ silent: true });
     } finally {
       setActingId(null);
@@ -69,18 +74,26 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
   };
 
   const approve = (id: string) =>
-    runAction(id, () => updateMessageStatus(id, 'approved'));
+    runAction(id, () => updateMessageStatus(id, 'approved'), 'Послание одобрено');
 
   const reject = (id: string) =>
-    runAction(id, () => updateMessageStatus(id, 'rejected'));
+    runAction(id, () => updateMessageStatus(id, 'rejected'), 'Послание отклонено');
 
   const publish = (id: string) => {
     const message = messages.find((item) => item.id === id);
-    return runAction(id, () => updateMessageFeatured(id, true, message));
+    return runAction(
+      id,
+      () => updateMessageFeatured(id, true, message),
+      'Послание опубликовано на сайте',
+    );
   };
 
   const unpublish = (id: string) =>
-    runAction(id, () => updateMessageFeatured(id, false));
+    runAction(
+      id,
+      () => updateMessageFeatured(id, false),
+      'Послание снято с сайта',
+    );
 
   const remove = async (id: string) => {
     setActionError(null);
@@ -89,8 +102,10 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
       const result = await deleteMessage(id);
       if (!result.ok) {
         setActionError(result.error);
+        setActionSuccess(null);
         return;
       }
+      setActionSuccess('Послание удалено');
       await refetch({ silent: true });
     } finally {
       setActingId(null);
@@ -103,6 +118,7 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
     actingId,
     error,
     actionError,
+    actionSuccess,
     refetch,
     approve,
     reject,
