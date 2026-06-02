@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ADMIN_OVERRIDES_EVENT } from '@/services/adminOverrides';
 import { EMPTY_STATS, getStats } from '@/services/messages';
 import type { ProjectStats } from '@/types';
 
@@ -45,14 +44,10 @@ export function useStats(): UseStatsResult {
 
   useEffect(() => {
     const refresh = () => void refetch();
-
-    window.addEventListener(ADMIN_OVERRIDES_EVENT, refresh);
     window.addEventListener('focus', refresh);
-
     const pollId = window.setInterval(refresh, STATS_POLL_MS);
 
     return () => {
-      window.removeEventListener(ADMIN_OVERRIDES_EVENT, refresh);
       window.removeEventListener('focus', refresh);
       window.clearInterval(pollId);
     };

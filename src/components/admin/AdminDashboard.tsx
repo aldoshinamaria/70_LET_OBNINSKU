@@ -129,14 +129,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ) : (
           <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-secondary">
             <p>
-              Послания загружаются из Supabase. Кнопки «Одобрить» и «На сайт» пишут в базу; при
-              ошибке смотрите консоль браузера (F12) — строки{' '}
-              <code className="text-primary">[admin] Supabase</code>.
+              Список один для всех устройств — из Supabase.{' '}
+              <strong className="text-text">«На сайт»</strong> — послание видят все на
+              obninsk70.ru (орбита и «Голос Обнинска»). Только «Одобрить» на главной не появится.
             </p>
             <p className="mt-2 text-xs text-secondary/90">
-              Если на главной остались старые карточки после сброса базы — очистите локальный кэш
-              модерации или выполните{' '}
-              <code className="text-primary">supabase/reset-all-messages.sql</code> в SQL Editor.
+              Если статусы на разных компьютерах расходятся — нажмите «Очистить локальный кэш
+              модерации» на каждом браузере, где открывали админку, затем снова «На сайт».
             </p>
             <Button
               variant="secondary"

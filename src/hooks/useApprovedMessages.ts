@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ADMIN_OVERRIDES_EVENT } from '@/services/adminOverrides';
 import { getApprovedMessages } from '@/services/messages';
 import type { Message } from '@/types';
 
@@ -36,16 +35,9 @@ export function useApprovedMessages(): UseApprovedMessagesResult {
   }, [refetch]);
 
   useEffect(() => {
-    const onOverridesChanged = () => void refetch({ silent: true });
     const onFocus = () => void refetch({ silent: true });
-
-    window.addEventListener(ADMIN_OVERRIDES_EVENT, onOverridesChanged);
     window.addEventListener('focus', onFocus);
-
-    return () => {
-      window.removeEventListener(ADMIN_OVERRIDES_EVENT, onOverridesChanged);
-      window.removeEventListener('focus', onFocus);
-    };
+    return () => window.removeEventListener('focus', onFocus);
   }, [refetch]);
 
   return { messages, loading, error, refetch };

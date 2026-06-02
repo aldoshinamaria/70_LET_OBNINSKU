@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { applyAdminOverrides } from '@/services/adminOverrides';
 import {
   deleteMessage,
   getAllMessages,
@@ -63,7 +62,6 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
         setActionError(result.error ?? 'Не удалось выполнить действие.');
         return;
       }
-      setMessages((prev) => applyAdminOverrides(prev));
       await refetch({ silent: true });
     } finally {
       setActingId(null);
@@ -93,7 +91,6 @@ export function useAdminMessages(enabled: boolean): UseAdminMessagesResult {
         setActionError(result.error);
         return;
       }
-      setMessages((prev) => applyAdminOverrides(prev));
       await refetch({ silent: true });
     } finally {
       setActingId(null);

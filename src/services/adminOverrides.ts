@@ -146,22 +146,23 @@ function sortByNewest(a: Message, b: Message): number {
 }
 
 /**
- * Послания для «Голос Обнинска»: из базы + снимки опубликованных в админке.
+ * Послания для «Голос Обнинска» — только то, что реально в базе (approved + на сайте).
+ * localStorage админки сюда не подмешивается: иначе у каждого устройства свой «сайт».
  */
 export function collectPublishedMessages(
   messages: Message[],
   limit: number,
 ): Message[] {
-  const byId = new Map<string, Message>();
+  const source = isSupabaseConfigured
+    ? messages
+    : applyAdminOverrides(messages);
 
-  for (const message of applyAdminOverrides(messages)) {
-    if (message.status === 'approved' && message.featured) {
-      byId.set(message.id, message);
-    }
-  }
+  const published = source.filter(
+    (message) => message.status === 'approved' && message.featured,
+  );
 
-  // Снимки из localStorage — только в DEMO без Supabase (иначе «призраки» после сброса БД)
   if (!isSupabaseConfigured) {
+    const byId = new Map(published.map((m) => [m.id, m]));
     for (const patch of Object.values(readAdminOverrides())) {
       if (
         patch.snapshot &&
@@ -173,7 +174,8 @@ export function collectPublishedMessages(
         byId.set(snap.id, snap);
       }
     }
+    return [...byId.values()].sort(sortByNewest).slice(0, limit);
   }
 
-  return [...byId.values()].sort(sortByNewest).slice(0, limit);
+  return published.sort(sortByNewest).slice(0, limit);
 }

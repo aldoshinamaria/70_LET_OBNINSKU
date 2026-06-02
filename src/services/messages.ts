@@ -160,11 +160,41 @@ export async function createMessage(
   }
 }
 
+/** Загрузка посланий из Supabase / demo без localStorage админки. */
+async function fetchMessagesRaw(): Promise<ServiceResult<Message[]>> {
+  if (useLocal) {
+    return { ok: true, data: localGetAllMessages() };
+  }
+
+  const supabase = await getSupabase();
+  if (!supabase) {
+    return { ok: false, error: 'Не удалось подключиться к Supabase.' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(MESSAGES_TABLE)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return { ok: false, error: mapSupabaseError(error.message, error.code) };
+    }
+
+    return {
+      ok: true,
+      data: ((data ?? []) as Message[]).map(normalizeMessage),
+    };
+  } catch {
+    return { ok: false, error: NETWORK_ERROR };
+  }
+}
+
 /** Возвращает лучшие послания, опубликованные на сайте («Голос Обнинска»). */
 export async function getApprovedMessages(
   limit = 60,
 ): Promise<ServiceResult<Message[]>> {
-  const all = await getAllMessages();
+  const all = await fetchMessagesRaw();
   if (!all.ok) {
     return all;
   }
@@ -234,7 +264,7 @@ export function buildProjectStats(messages: Message[]): ProjectStats {
  * Статистика «Город в цифрах»; последний голос — новейшее одобренное послание.
  */
 export async function getStats(): Promise<ServiceResult<ProjectStats>> {
-  const all = await getAllMessages();
+  const all = await fetchMessagesRaw();
   if (!all.ok) {
     return { ok: false, error: all.error };
   }
@@ -246,53 +276,39 @@ export async function getStats(): Promise<ServiceResult<ProjectStats>> {
 
 /** Возвращает все послания (для админ-панели). */
 export async function getAllMessages(): Promise<ServiceResult<Message[]>> {
-  const supabase = useLocal ? null : await getSupabase();
-  if (!supabase) {
-    return { ok: true, data: applyAdminOverrides(localGetAllMessages()) };
+  const raw = await fetchMessagesRaw();
+  if (!raw.ok) {
+    return raw;
   }
 
-  try {
-    const { data, error } = await supabase
-      .from(MESSAGES_TABLE)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return { ok: false, error: error.message };
-    }
-
-    const rows = ((data ?? []) as Message[]).map(normalizeMessage);
-    pruneOrphanAdminOverrides(rows.map((row) => row.id));
-
-    return {
-      ok: true,
-      data: applyAdminOverrides(rows),
-    };
-  } catch {
-    return { ok: false, error: NETWORK_ERROR };
+  if (useLocal) {
+    return { ok: true, data: applyAdminOverrides(raw.data) };
   }
+
+  pruneOrphanAdminOverrides(raw.data.map((row) => row.id));
+  return { ok: true, data: raw.data };
 }
 
 export async function updateMessageStatus(
   id: string,
   status: MessageStatus,
 ): Promise<ServiceResult<true>> {
-  const overridePatch: {
-    status: MessageStatus;
-    featured?: boolean;
-  } = { status };
-  if (status === 'rejected') overridePatch.featured = false;
-
-  if (!patchAdminOverride(id, overridePatch)) {
-    return {
-      ok: false,
-      error:
-        'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
-    };
-  }
-
   const supabase = useLocal ? null : await getSupabase();
   if (!supabase) {
+    const overridePatch: {
+      status: MessageStatus;
+      featured?: boolean;
+    } = { status };
+    if (status === 'rejected') overridePatch.featured = false;
+
+    if (!patchAdminOverride(id, overridePatch)) {
+      return {
+        ok: false,
+        error:
+          'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
+      };
+    }
+
     const ok = localUpdateMessageStatus(id, status);
     if (!ok) {
       return {
@@ -315,11 +331,16 @@ export async function updateMessageStatus(
 
     if (error) {
       console.warn('[admin] Supabase update status:', error.message);
+      return {
+        ok: false,
+        error: mapSupabaseError(error.message, error.code),
+      };
     }
 
+    removeAdminOverride(id);
     return { ok: true, data: true };
   } catch {
-    return { ok: true, data: true };
+    return { ok: false, error: NETWORK_ERROR };
   }
 }
 
@@ -329,24 +350,24 @@ export async function updateMessageFeatured(
   featured: boolean,
   sourceMessage?: Message,
 ): Promise<ServiceResult<true>> {
-  const overridePatch = featured
-    ? {
-        featured: true,
-        status: 'approved' as MessageStatus,
-        ...(sourceMessage ? { snapshot: sourceMessage } : {}),
-      }
-    : { featured: false };
-
-  if (!patchAdminOverride(id, overridePatch)) {
-    return {
-      ok: false,
-      error:
-        'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
-    };
-  }
-
   const supabase = useLocal ? null : await getSupabase();
   if (!supabase) {
+    const overridePatch = featured
+      ? {
+          featured: true,
+          status: 'approved' as MessageStatus,
+          ...(sourceMessage ? { snapshot: sourceMessage } : {}),
+        }
+      : { featured: false };
+
+    if (!patchAdminOverride(id, overridePatch)) {
+      return {
+        ok: false,
+        error:
+          'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
+      };
+    }
+
     const ok = localUpdateMessageFeatured(id, featured);
     if (!ok) {
       return {
@@ -370,25 +391,30 @@ export async function updateMessageFeatured(
 
     if (error) {
       console.warn('[admin] Supabase update featured:', error.message);
+      return {
+        ok: false,
+        error: mapSupabaseError(error.message, error.code),
+      };
     }
 
+    removeAdminOverride(id);
     return { ok: true, data: true };
   } catch {
-    return { ok: true, data: true };
+    return { ok: false, error: NETWORK_ERROR };
   }
 }
 
 export async function deleteMessage(id: string): Promise<ServiceResult<true>> {
-  if (!patchAdminOverride(id, { deleted: true })) {
-    return {
-      ok: false,
-      error:
-        'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
-    };
-  }
-
   const supabase = useLocal ? null : await getSupabase();
   if (!supabase) {
+    if (!patchAdminOverride(id, { deleted: true })) {
+      return {
+        ok: false,
+        error:
+          'Не удалось сохранить решение модератора. Разрешите localStorage для сайта.',
+      };
+    }
+
     const ok = localDeleteMessage(id);
     if (ok) removeAdminOverride(id);
     return ok
@@ -401,10 +427,15 @@ export async function deleteMessage(id: string): Promise<ServiceResult<true>> {
 
     if (error) {
       console.warn('[admin] Supabase delete:', error.message);
+      return {
+        ok: false,
+        error: mapSupabaseError(error.message, error.code),
+      };
     }
 
+    removeAdminOverride(id);
     return { ok: true, data: true };
   } catch {
-    return { ok: true, data: true };
+    return { ok: false, error: NETWORK_ERROR };
   }
 }
